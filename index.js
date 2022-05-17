@@ -8,11 +8,14 @@ let confidence;
 let seed;
 let genText;
 let textCounter = 0;
+let test = false;
+let p;
 
 // STEP1: Load the model!
 // "preload" will load any important assets (img's, datafiles, models) before the program starts in setup
 function preload() {
   classifier = ml5.imageClassifier(imageModelURL);
+  // could say: ml5.imageClassifer(model, video, callback)
   rnn = ml5.charRNN(
     "https://raw.githubusercontent.com/ml5js/ml5-data-and-models/main/models/charRNN/darwin/",
     modelLoaded
@@ -39,38 +42,58 @@ function setup() {
 
   button = createButton("write");
   button.mousePressed(write);
-  console.log(button);
   button.size(200, 100);
+  button.hide();
+  button.style("font-size", "30px");
+
+  p = createP("Find some nature!");
+  p.style("font-size", "30px");
 
   // STEP2: Start classifying
   classifyVideo();
-  console.log("setup() done");
 }
 
 function draw() {
-  if (frameCount == 1) {
-    console.log("draw() starts");
-  }
-
   background(0);
 
   // Draw the video
   image(video, 0, 0);
   //   line(15, 25, 70, 90);
 
-  if (confidence > 0.6) {
-    drawLabel();
+  // TODO: check if nature every classify loop or every draw loop?
+  // TODO: make a switch so that button innerhtml doesn't need to change everytime
+  // TODO: find nature has to be writeen
+  if (isNature()) {
+    drawBigLabel();
+    button.html("write about " + label);
+    p.hide();
+  } else {
+    button.hide();
+    p.show();
   }
 
-  // To see if github pages updated:
+  drawLabel();
+}
+
+function drawBigLabel() {
+  textSize(30);
+  fill(0);
+  rect(5, 30, 150, 50);
+  fill(255);
+  textAlign(CENTER, CENTER);
+  text(label, width / 2, height - 20);
+
+  button.show();
 }
 
 function drawLabel() {
-  textSize(32);
-  textAlign(CENTER, CENTER);
+  textSize(12);
+  fill(0);
+  rect(5, 30, 150, 50);
   fill(255);
-  text(label, width / 2, height - 17);
-  text(confidence, width / 2, height - 50);
+  textAlign(LEFT, BOTTOM);
+  text(label, 10, 50);
+  text(confidence, 10, 65);
 }
 
 function classifyVideo() {
@@ -82,9 +105,27 @@ function gotResults(error, results) {
     console.error(error);
     return;
   }
+
   label = results[0].label;
   confidence = results[0].confidence;
+
   classifyVideo();
+}
+
+function isNature() {
+  if (label == "background" || label == "waiting...") {
+    return false;
+  } else {
+    return true;
+  }
+}
+
+function isConfident() {
+  if (confidence > 0.6) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 function write() {
