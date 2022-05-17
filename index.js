@@ -1,5 +1,5 @@
 let video;
-let imageModelURL = "https://teachablemachine.withgoogle.com/models/AwK6pw9qk/";
+let imageModelURL = "https://teachablemachine.withgoogle.com/models/vj8tR7OQK/";
 let classifier;
 let rnn;
 let label = "waiting...";
@@ -44,27 +44,47 @@ function setup() {
 
   // STEP2: Start classifying
   classifyVideo();
+  console.log("setup() done");
 }
 
-// STEP2: classify!
-
 function draw() {
+  if (frameCount == 1) {
+    console.log("draw() starts");
+  }
+
   background(0);
 
   // Draw the video
   image(video, 0, 0);
   //   line(15, 25, 70, 90);
 
-  // STEP 4: Draw the label
+  if (confidence > 0.6) {
+    drawLabel();
+  }
+
+  // To see if github pages updated:
+}
+
+function drawLabel() {
   textSize(32);
   textAlign(CENTER, CENTER);
   fill(255);
   text(label, width / 2, height - 17);
-  // To see if github pages updated:
+  text(confidence, width / 2, height - 50);
 }
 
 function classifyVideo() {
   classifier.classify(video, gotResults);
+}
+
+function gotResults(error, results) {
+  if (error) {
+    console.error(error);
+    return;
+  }
+  label = results[0].label;
+  confidence = results[0].confidence;
+  classifyVideo();
 }
 
 function write() {
@@ -96,18 +116,6 @@ function renderGenText(seed, genText) {
   p.style("font-size", "16px");
   p.html(seed + " " + genText);
 }
-
-// STEP3: Get the classification!
-function gotResults(error, results) {
-  if (error) {
-    console.error(error);
-    return;
-  }
-  label = results[0].label;
-  confidence = results[0].confidence;
-  classifyVideo();
-}
-
 /*
 Todo:
 - only show label if sure
