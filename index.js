@@ -7,6 +7,7 @@ let button;
 let confidence;
 let seed;
 let genText;
+let textCounter = 0;
 
 // STEP1: Load the model!
 // "preload" will load any important assets (img's, datafiles, models) before the program starts in setup
@@ -67,7 +68,11 @@ function classifyVideo() {
 }
 
 function write() {
+  textCounter++;
+
   seed = label;
+
+  renderLoadingText();
 
   rnn.generate(
     {
@@ -76,14 +81,20 @@ function write() {
       temperature: 0.5,
     },
     (err, results) => {
-      renderText(seed, results.sample);
+      renderGenText(seed, results.sample);
     }
   );
 }
 
-function renderText(seed, genText) {
-  let p = createP(seed + "" + genText);
+function renderLoadingText() {
+  let p = createP(seed + " ... ");
+  p.id("text" + textCounter);
+}
+
+function renderGenText(seed, genText) {
+  let p = select(`#text${textCounter}`);
   p.style("font-size", "16px");
+  p.html(seed + " " + genText);
 }
 
 // STEP3: Get the classification!
