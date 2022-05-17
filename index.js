@@ -24,8 +24,7 @@ function modelLoaded() {
 
 // connect to the capture device
 function setup() {
-  let myCanvas = createCanvas(640, 480);
-  myCanvas.parent("myContainer");
+  createCanvas(displayWidth, (2 * displayHeight) / 3);
 
   // create a constraints object
   const constraints = {
@@ -39,6 +38,8 @@ function setup() {
 
   button = createButton("write");
   button.mousePressed(write);
+  console.log(button);
+  button.size(200, 100);
 
   // STEP2: Start classifying
   classifyVideo();
