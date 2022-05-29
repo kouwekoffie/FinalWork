@@ -28,7 +28,7 @@ function modelLoaded() {
 
 // connect to the capture device
 function setup() {
-  createCanvas(displayWidth, (2 * displayHeight) / 3);
+  createCanvas(windowWidth, windowHeight);
 
   // create a constraints object
   const constraints = {
@@ -57,7 +57,7 @@ function draw() {
   background(0);
 
   // Draw the video
-  image(video, 0, 0);
+  image(video, 0, 0, windowWidth, windowHeight);
   //   line(15, 25, 70, 90);
 
   // TODO: check if nature every classify loop or every draw loop?
@@ -157,8 +157,3 @@ function renderGenText(seed, genText) {
   p.style("font-size", "16px");
   p.html(seed + " " + genText);
 }
-/*
-Todo:
-- only show label if sure
-- try to deploy for mobile on github pages
-*/
