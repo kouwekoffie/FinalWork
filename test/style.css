@@ -1,8 +1,24 @@
+body {
+  padding: 0;
+  margin: 0;
+  /* no vertical scroll */
+  overflow: hidden;
+  position: fixed;
+}
+
 p {
   font-family: "Yeseva One";
   font-size: 50px;
-  line-height: 55px;
+  line-height: 50px;
 }
 p span {
   background-color: #c95b4f;
+}
+
+#container {
+  position: relative;
+}
+
+#overlay {
+  position: absolute;
 }

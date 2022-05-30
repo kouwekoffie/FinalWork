@@ -53,28 +53,6 @@ function setup() {
   classifyVideo();
 }
 
-function draw() {
-  background(0);
-
-  // Draw the video
-  image(video, 0, 0, windowWidth, windowHeight);
-  //   line(15, 25, 70, 90);
-
-  // TODO: check if nature every classify loop or every draw loop?
-  // TODO: make a switch so that button innerhtml doesn't need to change everytime
-  // TODO: find nature has to be writeen
-  if (isNature()) {
-    drawBigLabel();
-    button.html("write about " + label);
-    p.hide();
-  } else {
-    button.hide();
-    p.show();
-  }
-
-  drawLabel();
-}
-
 function drawBigLabel() {
   textSize(30);
   fill(0);
@@ -156,4 +134,26 @@ function renderGenText(seed, genText) {
   let p = select(`#text${textCounter}`);
   p.style("font-size", "16px");
   p.html(seed + " " + genText);
+}
+
+function draw() {
+  background(0);
+
+  // Draw the video
+  image(video, 0, 0, windowWidth, windowHeight);
+  //   line(15, 25, 70, 90);
+
+  // TODO: check if nature every classify loop or every draw loop?
+  // TODO: make a switch so that button innerhtml doesn't need to change everytime
+  // TODO: find nature has to be writeen
+  if (isNature()) {
+    drawBigLabel();
+    button.html("write about " + label);
+    p.hide();
+  } else {
+    button.hide();
+    p.show();
+  }
+
+  drawLabel();
 }
