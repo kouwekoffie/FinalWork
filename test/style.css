@@ -19,6 +19,26 @@ p span {
   position: relative;
 }
 
-#overlay {
+#UIOverlay {
   position: absolute;
+}
+
+#landingOverlay {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  z-index: 2;
+  left: 0;
+  top: 0;
+  background-color: #c95b4f;
+}
+
+#onboardingOverlay {
+  height: 90%;
+  width: 90%;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  background-color: #c95b4f;
 }

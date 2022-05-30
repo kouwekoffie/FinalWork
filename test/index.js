@@ -1,26 +1,50 @@
-let capture;
-let canvas;
-
 window.onload = init;
 
+//
+// HANDLE OVERLAY NAVIGATION
+//
+
 function init() {
-  let requestFullScreen = document.getElementById("requestFullScreen");
-  let exitFullScreen = document.getElementById("exitFullScreen");
-  requestFullScreen.addEventListener(
+  let tryIt = document.getElementById("tryIt");
+  let gotIt = document.getElementById("gotIt");
+  let exit = document.getElementById("exit");
+  let info = document.getElementById("info");
+
+  tryIt.addEventListener("click", function () {
+    //hide landingOverlay
+    document.getElementById("landingOverlay").style.display = "none";
+    // go full screen
+    document.body.requestFullscreen();
+  });
+
+  gotIt.addEventListener("click", function () {
+    //hide onboarding overlay
+    document.getElementById("onboardingOverlay").style.display = "none";
+  });
+
+  exit.addEventListener(
     "click",
     function () {
-      document.body.requestFullscreen();
-    },
-    false
-  );
-  exitFullScreen.addEventListener(
-    "click",
-    function () {
+      // exit full screen
       document.exitFullscreen();
+      // show landing overlay
+      document.getElementById("landingOverlay").style.display = "block";
+      window.scrollTo(0, 0);
     },
     false
   );
+
+  info.addEventListener("click", function () {
+    //show onboarding overlay
+    document.getElementById("onboardingOverlay").style.display = "block";
+  });
 }
+
+//
+// P5 GET MEDIASTREAM AND RENDER ON CANVAS
+//
+
+let capture;
 
 const constraints = {
   audio: false,
@@ -29,12 +53,16 @@ const constraints = {
   },
 };
 
+// easy way to show snap
 function mousePressed() {
   noLoop();
 }
-
 function mouseReleased() {
   loop();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
 }
 
 function setup() {
@@ -42,19 +70,14 @@ function setup() {
   myCanvas.parent("container");
   capture = createCapture(constraints);
   capture.hide();
-
-  canvas = document.getElementById("defaultCanvas0");
 }
 
 function draw() {
+  // calculate render size (render the capture full window on the full window canvas)
   let x = innerHeight / capture.height;
   let imageHeight = capture.height * x;
   let imageWidth = capture.width * x;
-
   let xOffset = (capture.width - innerWidth) / 2;
-  image(capture, -xOffset, 0, imageWidth, imageHeight);
-}
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  image(capture, -xOffset, 0, imageWidth, imageHeight);
 }
