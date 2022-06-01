@@ -38,6 +38,22 @@ function init() {
     //show onboarding overlay
     document.getElementById("onboardingOverlay").style.display = "block";
   });
+
+  // // wrap text with backdrop filter div
+  // // element that will be wrapped
+  // var el = document.getElementsByClassName("genText");
+  // Array.from(el).forEach((el) => {
+  //   // create wrapper container
+  //   var wrapper = document.createElement("div");
+
+  //   // insert wrapper before el in the DOM tree
+  //   el.parentNode.insertBefore(wrapper, el);
+
+  //   // move el into wrapper
+  //   wrapper.appendChild(el);
+
+  //   wrapper.classList.add("blured");
+  // });
 }
 
 //

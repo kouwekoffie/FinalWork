@@ -6,13 +6,11 @@ body {
   position: fixed;
 }
 
-p {
+span {
   font-family: "Yeseva One";
   font-size: 50px;
   line-height: 50px;
-}
-p span {
-  background-color: #c95b4f;
+  backdrop-filter: blur(15px);
 }
 
 #container {

@@ -1,5 +1,5 @@
 let video;
-let imageModelURL = "https://teachablemachine.withgoogle.com/models/vj8tR7OQK/";
+let imageModelURL = "https://teachablemachine.withgoogle.com/models/JFxZNYgsn/";
 let classifier;
 let rnn;
 let label = "waiting...";
@@ -11,19 +11,19 @@ let textCounter = 0;
 let test = false;
 let p;
 
-// STEP1: Load the model!
+function modelLoaded(model) {
+  console.log(model, "Loaded!");
+}
+
 // "preload" will load any important assets (img's, datafiles, models) before the program starts in setup
-function preload() {
-  classifier = ml5.imageClassifier(imageModelURL);
+async function preload() {
+  classifier = ml5.imageClassifier(imageModelURL, modelLoaded("classifier"));
+  console.log(classifier);
   // could say: ml5.imageClassifer(model, video, callback)
   rnn = ml5.charRNN(
     "https://raw.githubusercontent.com/ml5js/ml5-data-and-models/main/models/charRNN/darwin/",
-    modelLoaded
+    modelLoaded("rnn")
   );
-}
-
-function modelLoaded() {
-  console.log("Model Loaded!");
 }
 
 // connect to the capture device
@@ -37,7 +37,7 @@ function setup() {
       facingMode: "environment",
     },
   };
-  video = createCapture(constraints);
+  video = createCapture(constraints, classifyVideo);
   video.hide();
 
   button = createButton("write");
@@ -74,11 +74,18 @@ function drawLabel() {
   text(confidence, 10, 65);
 }
 
+// let lastClassifyTime;
+
 function classifyVideo() {
+  // console.log("classify_start", millis() * 0.001);
   classifier.classify(video, gotResults);
+  // console.log("classifyTime (s): ", 0.001 * (millis() - lastClassifyTime));
+  // lastClassifyTime = millis();
 }
 
 function gotResults(error, results) {
+  // console.log("classify_end", millis() * 0.001);
+
   if (error) {
     console.error(error);
     return;
@@ -89,6 +96,76 @@ function gotResults(error, results) {
 
   classifyVideo();
 }
+
+// async attempt 2
+/*
+let lastClassifyTime;
+
+function classifyVideo() {
+  return new Promise((resolve) => {
+    classifier.classify(video, (error, results) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      resolve(results);
+    });
+  });
+}
+
+async function classifyLoop() {
+  while (true) {
+    //classify
+    console.log("start class");
+    const results = await classifyVideo();
+    console.log("end class");
+  }
+}
+
+*/
+
+// try with async await to see if it doesn't stop the draw block
+/*
+function classifyVideo() {
+  return new Promise((resolve) => {
+    classifier.classify(video, (error, results) => {
+      if (error) {
+        console.error(error);
+        return;
+      }
+      resolve(results);
+    });
+  });
+}
+
+async function callClassifier() {
+  console.log("test");
+  const results = await classifyVideo();
+  console.log(results);
+  label = results[0].label;
+  confidence = results[0].confidence;
+  callClassifier();
+}
+*/
+
+// tf lite
+/*
+function classifyVideo() {
+  const inputTensor = tf.image
+    // Resize.
+    .resizeBilinear(
+      tf.browser.fromPixels(document.querySelector("img")),
+      [224, 224]
+    )
+    // Normalize.
+    .expandDims()
+    .div(127.5)
+    .sub(1);
+
+  console.log(inputTensor);
+}
+
+*/
 
 function isNature() {
   if (label == "background" || label == "waiting...") {
@@ -136,7 +213,13 @@ function renderGenText(seed, genText) {
   p.html(seed + " " + genText);
 }
 
+// let lastRenderTime;
+
 function draw() {
+  console.log("render_start", millis() * 0.001);
+  // console.log("renderTime (s): ", 0.001 * (millis() - lastRenderTime));
+  // lastRenderTime = millis();
+
   background(0);
 
   // Draw the video
@@ -146,6 +229,7 @@ function draw() {
   // TODO: check if nature every classify loop or every draw loop?
   // TODO: make a switch so that button innerhtml doesn't need to change everytime
   // TODO: find nature has to be writeen
+
   if (isNature()) {
     drawBigLabel();
     button.html("write about " + label);
@@ -156,4 +240,5 @@ function draw() {
   }
 
   drawLabel();
+  console.log("render_end", millis() * 0.001);
 }
