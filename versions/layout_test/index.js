@@ -90,6 +90,8 @@ function setup() {
 
 function draw() {
   // calculate render size (render the capture full window on the full window canvas)
+  // TODO https://github.com/processing/p5.js/wiki/Positioning-your-canvas
+  // > easier positioning
   let x = innerHeight / capture.height;
   let imageHeight = capture.height * x;
   let imageWidth = capture.width * x;
