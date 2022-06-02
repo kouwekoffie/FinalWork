@@ -16,7 +16,7 @@ const options = {
 };
 
 async function write() {
-  const res = await fetch("/api", options);
+  const res = await fetch("/api/test", options);
   const json = await res.json();
   console.log(json);
 }
