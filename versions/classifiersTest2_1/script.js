@@ -1,5 +1,11 @@
 let video;
-let imageModelURL = "https://teachablemachine.withgoogle.com/models/JFxZNYgsn/";
+let classifier0_URL =
+  "https://teachablemachine.withgoogle.com/models/JFxZNYgsn/";
+let classifier1_URL =
+  "https://teachablemachine.withgoogle.com/models/tP8OYUiUd/";
+let classifier2_URL =
+  "https://teachablemachine.withgoogle.com/models/wWMqOuK3t/";
+let classifier2_1_URL = "";
 let classifier;
 
 let resultsDiv;
@@ -17,7 +23,7 @@ function modelLoaded(model) {
 
 // "preload" will load any important assets (img's, datafiles, models) before the program starts in setup
 function preload() {
-  classifier = ml5.imageClassifier(imageModelURL, modelLoaded("classifier"));
+  classifier = ml5.imageClassifier(classifier2_URL, modelLoaded("classifier"));
   // could say: ml5.imageClassifer(model, video, callback)
 }
 

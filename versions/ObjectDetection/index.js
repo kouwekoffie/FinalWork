@@ -2,6 +2,8 @@ let video;
 let detector;
 let detections = [];
 
+console.log(ml5);
+
 function preload() {
   img = loadImage("./vetkruid.jpg");
   detector = ml5.objectDetector("cocossd");
