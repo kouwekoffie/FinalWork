@@ -1,0 +1,91 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+img {
+  position: absolute;
+  z-index: -1;
+  /* no vertical scroll */
+  overflow: hidden;
+  position: fixed;
+}
+
+/* reticle option 1:
+https://stackoverflow.com/a/61913549
+*/
+.box {
+  --b: 8px;
+  --c: black;
+  --w: -4px;
+  --r: 25px;
+  position: relative;
+  width: 90vw;
+  height: 90vh;
+  /* box-sizing: border-box; */
+  padding: 3px;
+  /* box-sizing: border-box; */
+  inline-flex: ;
+  font-size: 30px;
+  justify-content: center;
+  align-items: center;
+  /* line-height: 90px; */
+}
+.box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--c, black);
+  padding: 3px;
+  border-radius: var(--r);
+
+  -webkit-mask: linear-gradient(#fff 0 0) top / calc(80% - 2 * var(--w))
+      var(--b),
+    linear-gradient(#fff 0 0) bottom/calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) left / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) right / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  -webkit-mask-repeat: no-repeat;
+
+  mask: linear-gradient(#fff 0 0) top / calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) bottom/calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) left / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) right / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  mask-repeat: no-repeat;
+}
+
+/* reticle option svg _postion absolute:
+https://stackoverflow.com/a/33106451
+*/
+
+/* div.option2 {
+  background-color: rgba(255, 0, 0, 0.544);
+}
+
+svg {
+  position: absolute;
+} */
+
+/* reticle option svgs (top and bottom):
+https://stackoverflow.com/a/33106451
+*/
+
+div.option2 {
+  background-color: rgba(212, 255, 0, 0.544);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.content {
+  background-color: rgba(255, 0, 0, 0.388);
+}
+svg {
+  background-color: rgba(0, 81, 255, 0.607);
+}
