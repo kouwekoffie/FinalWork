@@ -1,0 +1,30 @@
+body {
+  padding: 0;
+  margin: 0;
+  /* no vertical scroll */
+  /* overflow: hidden;
+  position: fixed; */
+}
+
+#canvasContainer {
+  position: absolute;
+  z-index: -1;
+}
+
+#main {
+  width: 100vw;
+  height: 90vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+button {
+  font-size: 20px;
+  padding: 1em;
+}
+
+img {
+  width: 100vw;
+  height: 100vh;
+}
