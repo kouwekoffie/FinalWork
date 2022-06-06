@@ -1,0 +1,15 @@
+{
+  "background_color": "#c95b4f",
+  "description": "Shows random fox pictures. Hey, at least it isn't cats.",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "./icon.jpg",
+      "sizes": "172x172",
+      "type": "image/png"
+    }
+  ],
+  "name": "words for nature",
+  "short_name": "words for nature",
+  "start_url": "./index.html"
+}
