@@ -6,8 +6,75 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="./script.js"></script>
+    <link rel="stylesheet" href="style.css" />
+
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;500;700&family=Yeseva+One&display=block" rel="stylesheet">
+  
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
+        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+
   </head>
   <body>
-    <h1>Words For Nature</h1>
+    <div id="canvasContainer"></div>
+    <div class="overlay" id="landing">
+      <div id="install-banner">
+        <h3>Install</h3>
+        <div>
+          <p>Installing provides a quick way to return to this app.</p>
+          <p type="button" class="button-clean" id="install">install</p>
+        </div>
+      </div>
+      <div class="title-container">
+        <h1>Words <br> for <br> Nature</h1>
+        <p class="sub-title">
+          Automatically write and share stories about your local natural
+          environment
+        </p>
+      </div>
+      <div id="loader-container" >
+        <div id="loader"></div>
+        <p type="button" class="button-clean" id="start-writing">start writing</p>
+        </div>
+    </div>
+
+    <div class="overlay" id="onboarding">
+      <div>
+        <h2>How to write</h2>
+        <img src="./images/graphic.svg" alt="">
+        <p>
+          Use your camera to find a natural element in your environment to write
+          about. <br /> <br>
+          Try it out on your house plants or go outside and find out what you can
+          write about.
+        </p>
+        <p type="button" class="button-clean" id="got-it">got it</p>
+      </div>
+    </div>
+
+    <header>
+      <div class="header-inside">
+        <span class="material-symbols-outlined size-48" id="close">close</span>
+        </span>
+        <span class="material-symbols-outlined size-48" id="help"> help </span>
+      </div>
+    </header>
+
+    <div id="main">
+      <!-- div for the main elem because p5 automatically creates a main on load which I need to delete -->
+
+      
+      <div id="results"></div>
+
+    </div>
+
+    <footer>
+
+    </footer>
   </body>
 </html>

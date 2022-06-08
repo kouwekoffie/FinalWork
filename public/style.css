@@ -1,0 +1,224 @@
+:root {
+  --black: #161616;
+  --main-color: #c95b4f;
+  --white: #efefef;
+}
+
+* {
+  font-family: "nunito", sans-serif;
+  color: var(--black);
+}
+
+body {
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  margin: 0 0;
+}
+
+p {
+  font-family: "nunito", sans-serif;
+  font-size: 16px;
+  line-height: 22px;
+}
+
+.button-clean {
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ******** */
+/* overlays */
+/* ******** */
+
+/* landing container*/
+
+.overlay {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background-color: var(--main-color);
+
+  display: flex;
+}
+
+#landing {
+  z-index: 2;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#install-banner {
+  padding: 24px 24px;
+  background: var(--white);
+}
+
+h3 {
+  margin: 0;
+  font-weight: 500;
+  font-size: 18px;
+}
+
+#install-banner div {
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+  gap: 20%;
+}
+
+#install-banner div p {
+  flex-shrink: 2;
+  margin-top: 5px;
+  margin-bottom: 0;
+  line-height: 16px;
+}
+
+/* landing title*/
+
+h1 {
+  font-family: "Yeseva One", cursive;
+  font-size: 50px;
+  text-transform: uppercase;
+  line-height: 43px;
+}
+
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 310px;
+  margin-top: -20%;
+}
+
+.sub-title {
+  font-weight: 200;
+  font-size: 25px;
+  letter-spacing: 1px;
+  margin: 0;
+  line-height: 26px;
+}
+
+/* landing start-writing*/
+
+#loader {
+  border: 2px solid var(--black); /* Light grey */
+  border-top: 2px solid var(--main-color);
+  border-right: 2px solid var(--main-color);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s ease-in-out infinite;
+  transform: rotate(-45deg);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(-45deg);
+  }
+  100% {
+    transform: rotate(315deg);
+  }
+}
+
+#loader-container {
+  margin-bottom: 100px;
+}
+
+#start-writing {
+  display: none;
+}
+
+/* ******** */
+/* onboarding */
+/* ******** */
+
+#onboarding {
+  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(30px);
+
+  justify-content: center;
+  align-items: center;
+}
+
+#onboarding div {
+  height: 68%;
+  width: 85%;
+  background-color: var(--main-color);
+  border-radius: 20px;
+  padding: 17px;
+
+  display: flex;
+  box-sizing: border-box;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 25px;
+  font-weight: 400;
+}
+
+img {
+  height: 33%;
+}
+
+br {
+  display: block;
+  margin: 8px 0;
+  content: "";
+}
+
+#got-it {
+  align-self: flex-end;
+  margin-right: 1em;
+}
+
+/* ******** */
+/* heading */
+/* ******** */
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 200, "GRAD" 0, "opsz" 48;
+}
+
+span.size-48 {
+  font-size: 48px;
+  /* font-variation-settings: "OPSZ" 40; */
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 68px;
+}
+
+.header-inside {
+  display: flex;
+  justify-content: space-between;
+  background-color: var(--white);
+}
+
+/* ******** */
+/* mediastream */
+/* ******** */
+
+#canvasContainer {
+  position: absolute;
+  z-index: -1;
+}
+
+/* ******** */
+/* testing */
+/* ******** */
+
+#results {
+  display: absolute;
+  background-color: #efefef;
+}
