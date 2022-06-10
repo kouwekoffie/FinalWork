@@ -17,12 +17,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;500;700&family=Yeseva+One&display=block" rel="stylesheet">
   
     <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
-        <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
 
   </head>
   <body>
     <div id="canvasContainer"></div>
-    <div class="overlay" id="landing">
+    <div  class="overlay" id="landing">
       <div id="install-banner">
         <h3>Install</h3>
         <div>
@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div class="overlay" id="onboarding">
+    <div  class="overlay" id="onboarding" >
       <div>
         <h2>How to write</h2>
         <img src="./images/graphic.svg" alt="">
@@ -65,16 +65,26 @@
       </div>
     </header>
 
+    <div id="stories" class="overlay">    
+      <div id="to-write" type="button" class="floating-button">
+        <span class="material-symbols-outlined size-48">
+          add
+        </span>
+      </div>
+    </div>
+
     <div id="main">
       <!-- div for the main elem because p5 automatically creates a main on load which I need to delete -->
 
-      
-      <div id="results"></div>
-
+      <div id="reticle" class="snap-size reticle-open">
+        <div id="label-container"><img src="./images/ellipsis.svg" alt=""></div>
+      </div>
+      <div id="results"></div> 
+      <div id="tooltip">
+        <div id="progress"></div>
+        <p id="tooltip-text">Point your camera to nature</p>
+      </div>
     </div>
-
-    <footer>
-
-    </footer>
+    <div id="to-stories" type="button" class="floating-button"><img src="./images/quote.svg" alt=""></div>
   </body>
 </html>

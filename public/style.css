@@ -14,6 +14,9 @@ body {
   overflow: hidden;
   position: fixed;
   margin: 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 p {
@@ -46,7 +49,7 @@ p {
 }
 
 #landing {
-  z-index: 2;
+  z-index: 4;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
@@ -137,7 +140,7 @@ h1 {
 /* ******** */
 
 #onboarding {
-  z-index: 1;
+  z-index: 3;
   background-color: rgba(255, 255, 255, 0.3);
   backdrop-filter: blur(30px);
 
@@ -164,7 +167,7 @@ h2 {
   font-weight: 400;
 }
 
-img {
+#onboarding img {
   height: 33%;
 }
 
@@ -193,20 +196,37 @@ span.size-48 {
 }
 
 header {
+  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
   height: 68px;
+  padding: 0 10px;
+
+  /* background-color: var(--white); */
+  /* background-image: linear-gradient(
+    rgba(239, 239, 239, 0.392),
+    rgba(239, 239, 239, 0.392) 50%,
+    rgba(239, 239, 239, 0)
+  ); */
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(30px);
+  /* background-image: linear-gradient(rgba(22, 22, 22, 0.5), rgba(22, 22, 22, 0)); */
+
+  position: absolute;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 0px;
 }
 
 .header-inside {
   display: flex;
   justify-content: space-between;
-  background-color: var(--white);
 }
 
 /* ******** */
-/* mediastream */
+/* writing-page */
 /* ******** */
 
 #canvasContainer {
@@ -214,11 +234,173 @@ header {
   z-index: -1;
 }
 
+#tooltip {
+  width: 85%;
+  background-color: var(--black);
+  border-radius: 10px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: absolute;
+  margin: auto;
+  left: 0;
+  right: 0;
+  bottom: 20px;
+}
+
+#tooltip-text {
+  color: var(--white);
+  font-size: 18px;
+  z-index: 0;
+}
+
+#progress {
+  position: absolute;
+  z-index: 0;
+  left: 0px;
+  background-color: var(--main-color);
+  width: 0;
+  height: 100%;
+  border-radius: 10px;
+}
+
+#progress.progress-load {
+  transition: 5s;
+  width: 100%;
+}
+
+.reticle-open {
+  --w: 0%;
+  transition: all 2s;
+}
+
+.reticle-close {
+  --w: 40%;
+}
+
+/* https://stackoverflow.com/a/61913549 */
+#reticle {
+  --b: 8px;
+  /* --w: 0%; */
+  /* 40% full */
+  --r: 20px;
+  position: relative;
+  /* box-sizing: border-box; */
+  padding: 3px;
+  /* box-sizing: border-box; */
+  font-size: 30px;
+  justify-content: center;
+  align-items: center;
+  /* line-height: 90px; */
+}
+/* https://stackoverflow.com/a/61913549 */
+#reticle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--black);
+  padding: 1px;
+  border-radius: var(--r);
+
+  -webkit-mask: linear-gradient(#fff 0 0) top / calc(80% - 2 * var(--w))
+      var(--b),
+    linear-gradient(#fff 0 0) bottom/calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) left / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) right / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  -webkit-mask-repeat: no-repeat;
+
+  mask: linear-gradient(#fff 0 0) top / calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) bottom/calc(80% - 2 * var(--w)) var(--b),
+    linear-gradient(#fff 0 0) left / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) right / var(--b) calc(80% - 2 * var(--w)),
+    linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  mask-repeat: no-repeat;
+}
+
+#label-container {
+  background-color: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(30px);
+  width: max-content;
+  height: 25px;
+  border-radius: 20px;
+  margin: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#label-container span {
+  font-family: "Yeseva One", cursive;
+  font-size: 40px;
+  text-transform: uppercase;
+}
+
+#label-container img {
+  height: 7px;
+}
+
+#toStories {
+  display: none;
+}
+
+/* ******** */
+/* other */
+/* ******** */
+
+.snap-size {
+  width: 84vw;
+  height: 80vh;
+}
+
+.floating-button {
+  position: absolute;
+  top: 37%;
+  right: 10px;
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  background-color: var(--main-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 1px 3px 6px rgb(0 0 0 / 15%);
+}
+
+#to-stories {
+  display: none;
+}
+
+.floating-button img {
+  height: 22px;
+}
+
+/* ******** */
+/* storiespage */
+/* ******** */
+
+#stories {
+  z-index: 1;
+  display: none;
+}
+
 /* ******** */
 /* testing */
 /* ******** */
 
 #results {
-  display: absolute;
-  background-color: #efefef;
+  position: absolute;
+  background-color: #efefef4d;
+  position: absolute;
+  margin: auto;
+  left: 50px;
+  right: 70px;
+  bottom: 150px;
 }
