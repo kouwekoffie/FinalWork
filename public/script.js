@@ -1,6 +1,7 @@
 //IDB
 let db;
 let dbIsPopulated = false;
+let openRequest;
 
 // prompt
 let writePromptDelay = 3;
@@ -8,10 +9,16 @@ let userPrompted = false;
 
 // stories & write navigation
 let classifying = true;
+let firstResult = true;
 
-// p5
+// mediastreamrender
 let video;
 let canvas;
+let context;
+let constraints = {
+  audio: false,
+  video: { facingMode: { ideal: "environment" } },
+};
 
 // ml5
 let classifier_URL =
@@ -39,51 +46,9 @@ let closeBtn;
 let helpBtn;
 let toStoriesBtn;
 
-window.onload = init;
-
-function addSnap(frame, text) {
-  const newSnap = {
-    frame: frame,
-    text: text,
-  };
-
-  console.log(newSnap);
-
-  // open a read/write db transaction, ready for adding the data
-  const transaction = db.transaction(["snaps_os"], "readwrite");
-
-  // call an object store that's already been added to the database
-  const objectStore = transaction.objectStore("snaps_os");
-
-  // Make a request to add our newItem object to the object store
-  const addRequest = objectStore.add(newSnap);
-
-  transaction.addEventListener("complete", () => {
-    console.log("Transaction completed: database modification finished.");
-
-    // TODO: show stories
-  });
-
-  transaction.addEventListener("error", () =>
-    console.log("Transaction not opened due to error")
-  );
-}
-
 //
 // OVERLAYS
 //
-
-function checkDB() {
-  let transaction = db.transaction(["snaps_os"], "readonly");
-  let objectStore = transaction.objectStore("snaps_os");
-
-  let countRequest = objectStore.count();
-  // TODO promisify (https://stackoverflow.com/questions/22519784/how-do-i-convert-an-existing-callback-api-to-promises);
-  countRequest.onsuccess = function () {
-    console.log("countRequest: ", countRequest.result);
-    if (countRequest.result > 0) renderFloatingButton();
-  };
-}
 
 function init() {
   console.log("window loaded!");
@@ -91,95 +56,45 @@ function init() {
   //
   // IDB
   //
+
+  openRequest = window.indexedDB.open("snaps", 1);
   // open the database, create one when it doesn't exist yet
-  const openRequest = window.indexedDB.open("snaps", 1);
-
-  openRequest.addEventListener("error", () =>
-    console.error("Database failed to open")
-  );
-
-  openRequest.addEventListener("success", () => {
-    console.log("Database opened successfully");
-    db = openRequest.result;
-    // displayData(); // I cant show the old snaps before the new one loads in
-    checkDB();
-  });
-
+  openDb();
   //Set up the database tables if this has not already been done
-  openRequest.addEventListener("upgradeneeded", (e) => {
-    db = e.target.result; // seperate bc this event runs faster then succes
+  setupDBTables();
 
-    //create an objectStore (like a table)
-    //with an id keyfield
-    const objectStore = db.createObjectStore("snaps_os", {
-      keyPath: "id",
-      autoIncrement: true,
-    });
+  //
+  // DOM
+  //
 
-    /* Define the db scheme: each record will hold:
-  {
-    frame: "base64string",
-    text: "openai generated text",
-    id: 8
-  }
-  */
-    objectStore.createIndex("frame", "frame", { unique: false });
-    objectStore.createIndex("text", "text", { unique: false });
+  // grab reference to all elements
+  getDomElements();
+  //navigation
+  handleNavigation();
 
-    console.log("Database setup complete");
-  });
+  console.log(video.readyState, video.HAVE_ENOUGH_DATA);
+  //
+  // ASYNC STREAM AND CLASSIFIER
+  //
 
-  landingOverlay = document.getElementById("landing");
-  predictionsContainer = document.getElementById("results");
-  reticle = document.getElementById("reticle");
-  labelContainer = document.getElementById("label-container");
-  tooltip = document.getElementById("tooltip");
-  tooltipText = document.getElementById("tooltip-text");
-  progress = document.getElementById("progress");
-  onboarding = document.getElementById("onboarding");
-  stories = document.getElementById("stories");
+  // render stream
+  setCanvasSize();
+  // getStream();
+  const getStream = navigator.mediaDevices.getUserMedia(constraints);
+  const getClassifier = ml5.imageClassifier(classifier_URL);
 
-  startWritingBtn = document.getElementById("start-writing");
-  closeBtn = document.getElementById("close");
-  gotItBtn = document.getElementById("got-it");
-  helpBtn = document.getElementById("help");
-  toStoriesBtn = document.getElementById("to-stories");
-  toWrite = document.getElementById("to-write");
+  // wait for both the stream and the classifier to load
+  Promise.all([getStream, getClassifier]).then((values) => {
+    stream = values[0];
+    video.srcObject = stream;
 
-  startWritingBtn.addEventListener("click", () => {
-    landingOverlay.style.display = "none";
-    document.body.requestFullscreen();
-  });
-
-  gotItBtn.addEventListener("click", () => {
-    onboarding.style.display = "none";
-  });
-
-  closeBtn.addEventListener("click", () => {
-    landing.style.display = "flex";
-    window.scrollTo(0, 0);
-    document.exitFullscreen();
-  });
-
-  helpBtn.addEventListener("click", () => {
-    onboarding.style.display = "flex";
-  });
-
-  toStoriesBtn.addEventListener("click", () => {
-    classifying = false;
-    stories.style.display = "flex";
-  });
-
-  toWrite.addEventListener("click", () => {
-    //start classifying again
+    classifier = values[1];
+    console.log("model and stream loaded");
     classifyVideo();
-    stories.style.display = "none";
   });
 
-  // user decides to write
-  progress.addEventListener("transitionend", () => {
-    userPrompt();
-  });
+  // render media stream on the canvas
+  requestAnimationFrame(renderFrame);
 }
 
 //
@@ -213,29 +128,10 @@ async function write() {
 // write();
 
 */
-
 //
 // UPDATE DOM
 //
 
-function renderFloatingButton() {
-  toStoriesBtn.style.display = "flex";
-}
-
-// loader
-let firstResult = true;
-
-function endLoader() {
-  document.getElementById("loader").remove();
-  startWritingBtn.style.display = "block";
-}
-
-function renderIsWriting() {
-  // render tooltip
-  let text = `Writing...`;
-  tooltipText.innerText = text;
-  // animation?
-}
 /*
 scope problem with p5 saveFrames is not defined in the promise block
 const captureFrame = new Promise((resolve, reject) => {
@@ -261,14 +157,19 @@ function captureFrame(myCallback) {
 }
 */
 
+/*
 const captureFrame = new Promise((resolve, reject) => {
   canvas = document.getElementById("canvas");
   canvas.toBlob((blob) => {
     resolve(blob);
   });
 });
+*/
 
-async function userPrompt() {
+// is called when user holds his camera still in front of nature
+// and the same classification is done over and over
+// (long enough for the progress-transition to finish)
+function userPrompt() {
   let frame;
   let text;
 
@@ -289,6 +190,18 @@ async function userPrompt() {
   // addSnap() should be here in the code on this level and not in the captureFrame() function
 }
 
+// TODO: how to get renderFloatingButton() out of checkDB?
+function renderFloatingButton() {
+  toStoriesBtn.style.display = "flex";
+}
+
+function renderIsWriting() {
+  // render tooltip
+  let text = `Writing...`;
+  tooltipText.innerText = text;
+  // animation?
+}
+
 function renderFoundNature() {
   let html;
 
@@ -305,6 +218,8 @@ function renderFoundNature() {
 
   //if class is not added yet
   //tooltip-progress
+  // This adds a transition class to tooltips child,
+  // when the transition ends userPrompt is called
   if (!progress.classList.contains("progress-load")) {
     progress.classList.add("progress-load");
   }
@@ -345,6 +260,12 @@ function isConfident() {
   }
 }
 
+function endLoader() {
+  document.getElementById("loader").remove();
+  startWritingBtn.style.display = "block";
+  firstResult = false;
+}
+
 // for testing
 function renderResults() {
   let html = `
@@ -362,33 +283,32 @@ function renderResults() {
   }
 }
 
-//
-// CLASSIFIER (ml5)
-//
+function updateClassificationVariables(results) {
+  predictions = results;
+  label = results[0].label;
+  confidence = results[0].confidence;
+}
+
+function checkToStop() {
+  classifying = true;
+  console.log("Stop classifying");
+  return;
+}
 
 function classifyVideo() {
   classifier.classify(video, (error, results) => {
-    if (!classifying) {
-      classifying = true;
-      console.log("stop classifying");
-      return;
-    }
+    if (!classifying) checkToStop();
 
     // end loader on landing page
     if (firstResult) endLoader();
-    firstResult = false;
 
     if (error) {
       console.error(error);
       return;
     }
 
-    // update classificatino variables
-    predictions = results;
-    label = results[0].label;
-    confidence = results[0].confidence;
+    updateClassificationVariables(results);
 
-    // if changed change dom
     // TODO: add some logic so that it doesn't update dom every classification but only when changed
     if (isNature() && isConfident()) {
       renderFoundNature();
@@ -396,52 +316,205 @@ function classifyVideo() {
       renderNoNature();
     }
 
-    // renderResults();
+    // recursive
     classifyVideo();
   });
 }
 
-function modelLoaded() {
-  console.log("model loaded!");
-}
+//
+//
+//
+// DOM
+//
+//
+//
 
-function preload() {
-  classifier = ml5.imageClassifier(classifier_URL, modelLoaded());
+function getDomElements() {
+  landingOverlay = document.getElementById("landing");
+  predictionsContainer = document.getElementById("results");
+  reticle = document.getElementById("reticle");
+  labelContainer = document.getElementById("label-container");
+  tooltip = document.getElementById("tooltip");
+  tooltipText = document.getElementById("tooltip-text");
+  progress = document.getElementById("progress");
+  onboarding = document.getElementById("onboarding");
+  stories = document.getElementById("stories");
+  canvas = document.getElementById("canvas");
+  video = document.getElementById("video");
+  context = canvas.getContext("2d");
+
+  startWritingBtn = document.getElementById("start-writing");
+  closeBtn = document.getElementById("close");
+  gotItBtn = document.getElementById("got-it");
+  helpBtn = document.getElementById("help");
+  toStoriesBtn = document.getElementById("to-stories");
+  toWrite = document.getElementById("to-write");
 }
 
 //
-// CANVAS & MEDIASTREAM (p5)
+// DOM USER NAV
 //
+function handleNavigation() {
+  startWritingBtn.addEventListener("click", () => {
+    landingOverlay.style.display = "none";
+    document.body.requestFullscreen();
+  });
 
-function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  gotItBtn.addEventListener("click", () => {
+    onboarding.style.display = "none";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    landing.style.display = "flex";
+    window.scrollTo(0, 0);
+    document.exitFullscreen();
+  });
+
+  helpBtn.addEventListener("click", () => {
+    onboarding.style.display = "flex";
+  });
+
+  toStoriesBtn.addEventListener("click", () => {
+    classifying = false;
+    stories.style.display = "flex";
+  });
+
+  toWrite.addEventListener("click", () => {
+    //start classifying again
+    classifyVideo();
+    stories.style.display = "none";
+  });
+
+  // user decides to write
+  progress.addEventListener("transitionend", () => {
+    userPrompt();
+  });
 }
 
-function setup() {
-  canvas = createCanvas(innerWidth, innerHeight);
-  canvas.id("canvas");
-  let originParent = canvas.parent(); // reference the element thats automatically the canv parent
-  canvas.parent(document.getElementById("canvasContainer"));
-  originParent.remove(); // delete the original parent
+//
+// CANVAS & MEDIASTREAM
+//
 
-  // create a constraints object
-  const constraints = {
-    audio: false,
-    video: {
-      facingMode: "environment",
-    },
+// stretch canvas to windowSize
+function setCanvasSize() {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
+
+// TODO: read about requestanimation frame
+function renderFrame() {
+  requestAnimationFrame(renderFrame);
+  // scale video to window size and position on the canvas
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    let scale = video.videoHeight / innerHeight;
+    let sWidth = scale * innerWidth;
+    let sHeight = video.videoHeight;
+    let sx = 0.5 * (video.videoWidth - sWidth);
+    let sy = 0;
+    let dWidth = innerWidth;
+    let dHeight = innerHeight;
+    let dx = 0;
+    let dy = 0;
+
+    // draw it to the canvas
+    context.drawImage(video, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+  }
+}
+
+//
+//
+//
+// IDB
+//
+//
+//
+
+function openDb() {
+  openRequest.addEventListener("error", () =>
+    console.error("Database failed to open")
+  );
+
+  openRequest.addEventListener("success", () => {
+    console.log("Database opened successfully");
+    db = openRequest.result;
+    // displayData(); // I cant show the old snaps before the new one loads in
+    checkDB();
+  });
+}
+
+//Set up the database tables if this has not already been done
+function setupDBTables() {
+  openRequest.addEventListener("upgradeneeded", (e) => {
+    db = e.target.result; // seperate bc this event runs faster then succes
+
+    //create an objectStore (like a table)
+    //with an id keyfield
+    const objectStore = db.createObjectStore("snaps_os", {
+      keyPath: "id",
+      autoIncrement: true,
+    });
+
+    /* Define the db scheme: each record will hold:
+{
+  frame: "base64string",
+  text: "openai generated text",
+  id: 8
+}
+*/
+    objectStore.createIndex("frame", "frame", { unique: false });
+    objectStore.createIndex("text", "text", { unique: false });
+
+    console.log("Database setup complete");
+  });
+}
+
+function addSnap(frame, text) {
+  const newSnap = {
+    frame: frame,
+    text: text,
   };
-  video = createCapture(constraints, classifyVideo);
-  video.hide();
-  console.log("setup completed");
+
+  console.log(newSnap);
+
+  // open a read/write db transaction, ready for adding the data
+  const transaction = db.transaction(["snaps_os"], "readwrite");
+
+  // call an object store that's already been added to the database
+  const objectStore = transaction.objectStore("snaps_os");
+
+  // Make a request to add our newItem object to the object store
+  const addRequest = objectStore.add(newSnap);
+
+  transaction.addEventListener("complete", () => {
+    console.log("Transaction completed: database modification finished.");
+
+    // TODO: show stories
+  });
+
+  transaction.addEventListener("error", () =>
+    console.log("Transaction not opened due to error")
+  );
 }
 
-function draw() {
-  background(0);
+function checkDB() {
+  let transaction = db.transaction(["snaps_os"], "readonly");
+  let objectStore = transaction.objectStore("snaps_os");
 
-  let x = innerHeight / video.height;
-  let imageHeight = video.height * x;
-  let imageWidth = video.width * x;
-  let xOffset = (video.width - innerWidth) / 2;
-  image(video, -xOffset, 0, imageWidth, imageHeight);
+  let countRequest = objectStore.count();
+  // TODO promisify (https://stackoverflow.com/questions/22519784/how-do-i-convert-an-existing-callback-api-to-promises);
+  countRequest.onsuccess = function () {
+    console.log("countRequest: ", countRequest.result);
+    if (countRequest.result > 0) renderFloatingButton();
+  };
 }
+
+//
+//
+//
+// START
+//
+//
+//
+
+window.onresize = setCanvasSize;
+window.onload = init;

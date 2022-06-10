@@ -16,12 +16,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;400;500;700&family=Yeseva+One&display=block" rel="stylesheet">
   
-    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.1/lib/p5.js"></script>
     <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
 
   </head>
   <body>
-    <div id="canvasContainer"></div>
+    <div id="canvasContainer">
+      <video id="video" autoplay="true"></video>
+      <canvas id="canvas"></canvas>
+    </div>
     <div  class="overlay" id="landing">
       <div id="install-banner">
         <h3>Install</h3>
@@ -43,7 +45,7 @@
         </div>
     </div>
 
-    <div  class="overlay" id="onboarding" >
+    <div class="overlay" id="onboarding" >
       <div>
         <h2>How to write</h2>
         <img src="./images/graphic.svg" alt="">

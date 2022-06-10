@@ -9,6 +9,10 @@
   color: var(--black);
 }
 
+#video {
+  display: none;
+}
+
 body {
   padding: 0;
   overflow: hidden;
