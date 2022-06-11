@@ -379,7 +379,7 @@ header {
   box-shadow: 1px 3px 6px rgb(0 0 0 / 15%);
 }
 
-#to-stories {
+.hidden {
   display: none;
 }
 
@@ -414,7 +414,6 @@ header {
 
 .slide {
   /* TODO: set a max hight here on the story elements so that it doesn't show to big on smaller phones */
-  background-image: url(./images/test.jpg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -478,13 +477,6 @@ span.size-36 {
   font-size: 36px;
 }
 
-/* test */
-.slide2 {
-  background-image: url(./images/test2.png);
-}
-.slide3 {
-  background-image: url(./images/test3.jpg);
-}
 /* ******** */
 /* testing */
 /* ******** */

@@ -1,6 +1,5 @@
 //IDB
 let db;
-let dbIsPopulated = false;
 let openRequest;
 
 // prompt
@@ -19,6 +18,7 @@ let constraints = {
   audio: false,
   video: { facingMode: { ideal: "environment" } },
 };
+let canvasStreamAnimationID;
 
 // ml5
 let classifier_URL =
@@ -60,7 +60,16 @@ function init() {
 
   openRequest = window.indexedDB.open("snaps", 1);
   // open the database, create one when it doesn't exist yet
-  openDb();
+
+  openDb()
+    .then(() => {
+      return dbIsPopulated();
+    })
+    .then((dbIsPopulated) => {
+      console.log("Is db populated: ", dbIsPopulated);
+      if (dbIsPopulated) renderToStoriesButton();
+    });
+
   //Set up the database tables if this has not already been done
   setupDBTables();
 
@@ -72,8 +81,6 @@ function init() {
   getDomElements();
   //navigation
   handleNavigation();
-
-  console.log(video.readyState, video.HAVE_ENOUGH_DATA);
 
   //
   // ASYNC STREAM AND CLASSIFIER
@@ -99,8 +106,21 @@ function init() {
   requestAnimationFrame(renderFrame);
 
   //
-  // stories page navigation (horizontal slide)
   //
+  // stories page navigation + share (horizontal slide)
+  //
+  //
+
+  //TODO stories page nav needs to be handled after db loads in
+
+  //
+  // NAV
+  //
+
+  /*
+
+  // slider = document.getElementById("slider-container");
+  slides = Array.from(document.getElementsByClassName("slide"));
 
   slides.forEach((slide, index) => {
     // Touch events
@@ -109,17 +129,83 @@ function init() {
     slide.addEventListener("touchmove", touchMove);
   });
 
+  */
+
+  //
+  // SHARE
+  //
+
+  /*
+
+  shareBtns = Array.from(document.getElementsByClassName("share-button"));
+
+  shareBtns.forEach((shareBtn, index) => {
+    // get frame + text from IDB (based on index)
+    // make a sinlge png format (maybe based on which btn is pressed; -fb -insta)
+    // OR make the format when save to db in the first place
+    // OR just get the image from the html...
+
+    // const blob = `firstChild.style.background-url`;
+    // const filesArray = [
+    //   new File([blob], "frame.jpg", {
+    //     type: "image/jpeg",
+    //     lastModified: new Date().getTime(),
+    //   }),
+    // ];
+
+    const shareData = {
+      title: "WORDS FOR NATURE",
+      text: `firstChild.firstchild.firstchild.innerText`,
+      url: "link to the app",
+      // files: filesArray,
+    };
+    shareBtn.addEventListener("click", async () => {
+      try {
+        await navigator.share(shareData);
+        // TODO: show reuslt in app
+        // resultPara.textContent = "WORDS FOR NATURE shared succesfully";
+      } catch (err) {
+        // resultPara.textContent = "Error: " + err;
+      }
+    });
+  });
+
+  */
+
   //
   // TEST
   //
   // testSliderContainer();
 }
 
+// write();
+
+//////////////////
+//////////////////
+//////////////////
+////////////////// DOM
+//////////////////
+//////////////////
+//////////////////
+
 //
-// stories page navigation (horizontal slide)
+//
+// STORIES
+//
 //
 
-// stories page navigation
+// show camera-feed
+function showCamerFeed() {}
+
+// show stories
+function renderStoriesPage() {
+  stories.style.display = "flex";
+  header.classList.remove("blurred");
+}
+
+//
+// stories slider
+//
 let slider;
 let slides;
 
@@ -127,7 +213,7 @@ let isDragging = false,
   startPos = 0,
   currentTranslate = 0,
   prevTranslate = 0,
-  animationID = 0,
+  sliderAnimationID = 0,
   currentIndex = 0;
 
 function touchStart(index) {
@@ -146,14 +232,14 @@ function touchStart(index) {
     // It returns an animatinoId wchich we can use later on
     // to end the animation frame in touchEnd()
     // - takes in a function and call it inside recursively
-    animationID = requestAnimationFrame(animation);
+    sliderAnimationID = requestAnimationFrame(animation);
     slider.classList.add("grabbing");
   };
 }
 
 function touchEnd() {
   isDragging = false;
-  cancelAnimationFrame(animationID);
+  cancelAnimationFrame(sliderAnimationID);
 
   const movedBy = currentTranslate - prevTranslate;
   // if slided more then x go to next/prev slide
@@ -193,103 +279,16 @@ function setPositionByIndex() {
   prevTranslate = currentTranslate;
 }
 
-//
-// OPEN AI
-//
-
-/*
-// dummy data for api call
-const completions = [
-  "This a dummy completion from the openAI GPT3 model",
-  "This is another completion thats different from the previous one",
-];
-let label = "tree";
-
-// call api on user input (timer or tap)
-let data = { label, completions };
-const options = {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json", // say that it's json
-  },
-  body: JSON.stringify(data), // completions as a json string
-};
-
-async function write() {
-  const res = await fetch("/api/test", options);
-  const json = await res.json();
-  console.log(json);
-}
-
-// write();
-
-*/
-//
-// UPDATE DOM
-//
-
-/*
-scope problem with p5 saveFrames is not defined in the promise block
-const captureFrame = new Promise((resolve, reject) => {
-  saveFrames("out", "png", 1, 1, (data) => {
-    // async call language model
-    text = "dummy text";
-    addSnap();
-
-    frame = data[0].imageData;
-    // frame = JSON.stringify(data[0].imageData);
-    resolve(frame);
-  });
-});
-*/
-/*
-also scope problem
-function captureFrame(myCallback) {
-  saveFrames("out", "png", 1, 1, (data) => {
-    frame = data[0].imageData;
-    // frame = JSON.stringify(data[0].imageData);
-    myCallback(frame);
-  });
-}
-*/
-
-/*
-const captureFrame = new Promise((resolve, reject) => {
-  canvas = document.getElementById("canvas");
-  canvas.toBlob((blob) => {
-    resolve(blob);
-  });
-});
-*/
-
-// is called when user holds his camera still in front of nature
-// and the same classification is done over and over
-// (long enough for the progress-transition to finish)
-function userPrompt() {
-  let frame;
-  let text;
-
-  console.log("user prompt");
-  // stop classyfing
-  classifying = false;
-  // save frame
-  // TODO: show the snap already like in the stories page?
-  captureFrame.then(console.log(blob));
-  // stop p5 write
-  noLoop();
-  // renderIsWriting
-  renderIsWriting();
-
-  //TODO: async call language model
-
-  //TODO: make promises or callback so capturing frame and calling proxyserver and adding snap can be nicely handled before navigating to other page
-  // addSnap() should be here in the code on this level and not in the captureFrame() function
-}
-
 // TODO: how to get renderFloatingButton() out of checkDB?
-function renderFloatingButton() {
-  toStoriesBtn.style.display = "flex";
+function renderToStoriesButton() {
+  toStoriesBtn.classList.remove("hidden");
 }
+
+//
+//
+// camera-feed/classifier UI states
+//
+//
 
 function renderIsWriting() {
   // render tooltip
@@ -340,22 +339,6 @@ function renderNoNature() {
   progress.classList.remove("progress-load");
 }
 
-function isNature() {
-  if (label !== "background" && label !== null) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-function isConfident() {
-  if (confidence > confidenceTreshold) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 function endLoader() {
   document.getElementById("loader").remove();
   startWritingBtn.style.display = "block";
@@ -376,6 +359,223 @@ function renderResults() {
     predictionsContainer.firstElementChild.classList.add("highConfidence");
   } else {
     predictionsContainer.firstElementChild.classList.remove("highConfidence");
+  }
+}
+
+//
+//
+// GRAB DOM ELEMENTS
+//
+//
+// TODO: declare these at the lines where I'm working with the variables
+
+function getDomElements() {
+  landingOverlay = document.getElementById("landing");
+  predictionsContainer = document.getElementById("results");
+  reticle = document.getElementById("reticle");
+  labelContainer = document.getElementById("label-container");
+  tooltip = document.getElementById("tooltip");
+  tooltipText = document.getElementById("tooltip-text");
+  progress = document.getElementById("progress");
+  onboarding = document.getElementById("onboarding");
+  stories = document.getElementById("stories");
+  canvas = document.getElementById("canvas");
+  video = document.getElementById("video");
+  context = canvas.getContext("2d");
+  header = document.getElementById("header");
+  slider = document.getElementById("slider-container");
+
+  startWritingBtn = document.getElementById("start-writing");
+  closeBtn = document.getElementById("close");
+  gotItBtn = document.getElementById("got-it");
+  helpBtn = document.getElementById("help");
+  toStoriesBtn = document.getElementById("to-stories");
+  toWrite = document.getElementById("to-write");
+}
+
+//
+//
+// NAVIGATION
+//
+//
+
+function handleNavigation() {
+  startWritingBtn.addEventListener("click", () => {
+    landingOverlay.style.display = "none";
+    document.body.requestFullscreen();
+  });
+
+  gotItBtn.addEventListener("click", () => {
+    onboarding.style.display = "none";
+  });
+
+  closeBtn.addEventListener("click", () => {
+    landing.style.display = "flex";
+    window.scrollTo(0, 0);
+    document.exitFullscreen();
+  });
+
+  helpBtn.addEventListener("click", () => {
+    onboarding.style.display = "flex";
+  });
+
+  toStoriesBtn.addEventListener("click", () => {
+    classifying = false;
+    renderStoriesPage();
+  });
+
+  toWrite.addEventListener("click", () => {
+    // render camera-feed/classifier UI noNature state
+    renderNoNature();
+    //start classifying again
+    classifyVideo();
+
+    // update dom
+    stories.style.display = "none";
+    header.classList.add("blurred");
+    // show toStoriesButton if its after the first story
+    if (toStoriesBtn.classList.contains("hidden")) renderToStoriesButton();
+
+    //start rendering the stream again
+    canvasStreamAnimationID = requestAnimationFrame(renderFrame);
+  });
+
+  // user decides to write
+  progress.addEventListener("transitionend", () => {
+    userPrompt();
+  });
+}
+
+//////////////////
+//////////////////
+//////////////////
+////////////////// REQUEST STORY
+//////////////////
+//////////////////
+//////////////////
+
+// So I declare it in a function which executes only when called
+// again the solution with returning functions inside function
+function captureFrame(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      let reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = function () {
+        let url = reader.result;
+        console.log("url ready: ", url);
+        resolve(url);
+      };
+    });
+  });
+}
+
+//
+// OPEN AI
+//
+
+/*
+// dummy data for api call
+const completions = [
+  "This a dummy completion from the openAI GPT3 model",
+  "This is another completion thats different from the previous one",
+];
+
+let label = "tree";
+*/
+
+function callAIProxy(label) {
+  // TODO: save previous completions in localstorage so that they are taken into
+  // acount when the user uses the app the next time
+  const story = [
+    "This a dummy completion from the openAI GPT3 model",
+    "This is another completion thats different from the previous one",
+  ];
+
+  // call api on user input (timer or tap)
+  let data = { label, story };
+  const options = {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json", // say that it's json
+    },
+    body: JSON.stringify(data), // completions as a json string
+  };
+
+  return new Promise((resolve) => {
+    fetch("/api/test", options)
+      .then((res) => res.json())
+      .then((json) => {
+        // console.log(json);
+        resolve(json.choices[0].text);
+      });
+  });
+}
+
+// is called when user holds his camera still in front of nature
+// and the same classification is done over and over
+// (long enough for the progress-transition to finish)
+async function userPrompt() {
+  console.log("user prompt");
+
+  // TODO: do I have to declarce the functions in these variables?
+  let getFrame = captureFrame(canvas);
+  let getText = callAIProxy(label);
+
+  // stop classyfing
+  classifying = false;
+
+  // stop animationframe
+  cancelAnimationFrame(canvasStreamAnimationID);
+
+  // renderIsWriting
+  renderIsWriting();
+
+  // wait for frame and text load
+  // then wait for frame and text to upload to db
+  // then show the stories page
+  Promise.all([getFrame, getText])
+    .then((values) => {
+      const newSnap = {
+        frame: values[0],
+        text: values[1],
+      };
+      console.log("url after promise all: ", newSnap.frame);
+      console.log("frame and text loaded");
+      return newSnap;
+    })
+    .then((newSnap) => addToDB(newSnap))
+    .then(() => {
+      // load in the html injected with db data on the story page
+      return displayStories();
+    })
+    .then(() => {
+      console.log("after snaps all displayed");
+      renderStoriesPage();
+    });
+}
+
+//////////////////
+//////////////////
+//////////////////
+////////////////// CLASSIFIER LOGIC
+//////////////////
+//////////////////
+//////////////////
+
+function isNature() {
+  if (label !== "background" && label !== null) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function isConfident() {
+  if (confidence > confidenceTreshold) {
+    return true;
+  } else {
+    return false;
   }
 }
 
@@ -416,116 +616,13 @@ function classifyVideo() {
   });
 }
 
-//
-//
-//
-// DOM
-//
-//
-//
-
-function getDomElements() {
-  landingOverlay = document.getElementById("landing");
-  predictionsContainer = document.getElementById("results");
-  reticle = document.getElementById("reticle");
-  labelContainer = document.getElementById("label-container");
-  tooltip = document.getElementById("tooltip");
-  tooltipText = document.getElementById("tooltip-text");
-  progress = document.getElementById("progress");
-  onboarding = document.getElementById("onboarding");
-  stories = document.getElementById("stories");
-  canvas = document.getElementById("canvas");
-  video = document.getElementById("video");
-  context = canvas.getContext("2d");
-  slider = document.getElementById("slider-container");
-  slides = Array.from(document.getElementsByClassName("slide"));
-  header = document.getElementById("header");
-  shareBtns = Array.from(document.getElementsByClassName("share-button"));
-
-  startWritingBtn = document.getElementById("start-writing");
-  closeBtn = document.getElementById("close");
-  gotItBtn = document.getElementById("got-it");
-  helpBtn = document.getElementById("help");
-  toStoriesBtn = document.getElementById("to-stories");
-  toWrite = document.getElementById("to-write");
-}
-
-//
-// DOM USER NAV
-//
-function handleNavigation() {
-  startWritingBtn.addEventListener("click", () => {
-    landingOverlay.style.display = "none";
-    document.body.requestFullscreen();
-  });
-
-  gotItBtn.addEventListener("click", () => {
-    onboarding.style.display = "none";
-  });
-
-  closeBtn.addEventListener("click", () => {
-    landing.style.display = "flex";
-    window.scrollTo(0, 0);
-    document.exitFullscreen();
-  });
-
-  helpBtn.addEventListener("click", () => {
-    onboarding.style.display = "flex";
-  });
-
-  toStoriesBtn.addEventListener("click", () => {
-    classifying = false;
-    stories.style.display = "flex";
-    header.classList.remove("blurred");
-  });
-
-  toWrite.addEventListener("click", () => {
-    //start classifying again
-    classifyVideo();
-    stories.style.display = "none";
-    header.classList.add("blurred");
-  });
-
-  // user decides to write
-  progress.addEventListener("transitionend", () => {
-    userPrompt();
-  });
-
-  shareBtns.forEach((shareBtn, index) => {
-    // get frame + text from IDB (based on index)
-    // make a sinlge png format (maybe based on which btn is pressed; -fb -insta)
-    // OR make the format when save to db in the first place
-    // OR just get the image from the html...
-    /*
-    const blob = `firstChild.style.background-url`;
-    const filesArray = [
-      new File([blob], "frame.jpg", {
-        type: "image/jpeg",
-        lastModified: new Date().getTime(),
-      }),
-    ];
-    */
-    const shareData = {
-      title: "WORDS FOR NATURE",
-      text: `firstChild.firstchild.firstchild.innerText`,
-      url: "link to the app",
-      // files: filesArray,
-    };
-    shareBtn.addEventListener("click", async () => {
-      try {
-        await navigator.share(shareData);
-        // TODO: show reuslt in app
-        // resultPara.textContent = "WORDS FOR NATURE shared succesfully";
-      } catch (err) {
-        // resultPara.textContent = "Error: " + err;
-      }
-    });
-  });
-}
-
-//
-// CANVAS & MEDIASTREAM
-//
+//////////////////
+//////////////////
+//////////////////
+////////////////// MEDIASTREAM & CANVAS RENDER
+//////////////////
+//////////////////
+//////////////////
 
 // stretch canvas to windowSize
 function setCanvasSize() {
@@ -535,7 +632,7 @@ function setCanvasSize() {
 
 // TODO: read about requestanimation frame
 function renderFrame() {
-  requestAnimationFrame(renderFrame);
+  canvasStreamAnimationID = requestAnimationFrame(renderFrame);
   // scale video to window size and position on the canvas
   if (video.readyState === video.HAVE_ENOUGH_DATA) {
     let scale = video.videoHeight / innerHeight;
@@ -553,24 +650,25 @@ function renderFrame() {
   }
 }
 
-//
-//
-//
-// IDB
-//
-//
-//
+//////////////////
+//////////////////
+//////////////////
+////////////////// IDB
+//////////////////
+//////////////////
+//////////////////
 
 function openDb() {
-  openRequest.addEventListener("error", () =>
-    console.error("Database failed to open")
-  );
+  return new Promise((resolve) => {
+    openRequest.addEventListener("error", () =>
+      console.error("Database failed to open")
+    );
 
-  openRequest.addEventListener("success", () => {
-    console.log("Database opened successfully");
-    db = openRequest.result;
-    // displayData(); // I cant show the old snaps before the new one loads in
-    checkDB();
+    openRequest.addEventListener("success", () => {
+      console.log("Database opened successfully");
+      db = openRequest.result;
+      resolve();
+    });
   });
 }
 
@@ -600,64 +698,155 @@ function setupDBTables() {
   });
 }
 
-function addSnap(frame, text) {
-  const newSnap = {
-    frame: frame,
-    text: text,
-  };
+function addToDB(newSnap) {
+  // const newSnap = {
+  //   frame: frame,
+  //   text: text,
+  // };
 
-  console.log(newSnap);
+  return new Promise((resolve, reject) => {
+    // open a read/write db transaction, ready for adding the data
+    const transaction = db.transaction(["snaps_os"], "readwrite");
 
-  // open a read/write db transaction, ready for adding the data
-  const transaction = db.transaction(["snaps_os"], "readwrite");
+    // call an object store that's already been added to the database
+    const objectStore = transaction.objectStore("snaps_os");
 
-  // call an object store that's already been added to the database
-  const objectStore = transaction.objectStore("snaps_os");
+    // Make a request to add our newItem object to the object store
+    const addRequest = objectStore.add(newSnap);
 
-  // Make a request to add our newItem object to the object store
-  const addRequest = objectStore.add(newSnap);
+    transaction.addEventListener("complete", () => {
+      console.log("Transaction completed: database modification finished.");
+      resolve();
+    });
 
-  transaction.addEventListener("complete", () => {
-    console.log("Transaction completed: database modification finished.");
-
-    // TODO: show stories
+    transaction.addEventListener("error", () =>
+      console.log("Transaction not opened due to error")
+    );
   });
-
-  transaction.addEventListener("error", () =>
-    console.log("Transaction not opened due to error")
-  );
 }
 
-function checkDB() {
-  let transaction = db.transaction(["snaps_os"], "readonly");
-  let objectStore = transaction.objectStore("snaps_os");
+function dbIsPopulated() {
+  return new Promise((resolve) => {
+    let transaction = db.transaction(["snaps_os"], "readonly");
+    let objectStore = transaction.objectStore("snaps_os");
 
-  let countRequest = objectStore.count();
-  // TODO promisify (https://stackoverflow.com/questions/22519784/how-do-i-convert-an-existing-callback-api-to-promises);
-  countRequest.onsuccess = function () {
-    console.log("countRequest: ", countRequest.result);
-    if (countRequest.result > 0) renderFloatingButton();
-  };
+    let countRequest = objectStore.count();
+
+    countRequest.onsuccess = function () {
+      if (countRequest.result > 0) resolve(true);
+      else resolve(false);
+    };
+  });
 }
 
-//
-//
-//
-// START
-//
-//
-//
+// iterate through all the stories in IDB and insert in html stories page
+function displayStories() {
+  return new Promise((resolve) => {
+    // delete previoushtml
+    slider.innerHTML = "";
+    console.log("slider innerhtml deleted");
+
+    // Open object store and then get a cursor - which iterates through all the
+    // different data items in the store
+    const objectStore = db.transaction("snaps_os").objectStore("snaps_os");
+    objectStore.openCursor(null, "prev").addEventListener("success", (e) => {
+      // Get a reference to the cursor
+      const cursor = e.target.result;
+
+      // If there is still another data item to iterate through, keep running this code
+      if (cursor) {
+        console.log("read from IDB: ", cursor.value);
+        let text = cursor.value.text;
+        let url = cursor.value.frame;
+        url = url.split(",")[1];
+
+        let htmlString = `
+          <div class="slide slide-size" style="background-image: url(data:image/octet-stream;base64,${url});">
+                <div class="frame">
+                  <div class="text-background">
+                    <p class="generated-text">${text}</p>
+                  </div>
+                  <div type="button" class="share-button">
+                    <span class="material-symbols-outlined material-symbols-filled size-36">
+                    share
+                    </span>
+                  </div>
+                </div>
+              </div>
+          `;
+
+        slider.insertAdjacentHTML("beforeend", htmlString);
+
+        cursor.continue(); // Iterate to the next item in the cursor
+      } else {
+        // if there are no more cursor items to iterate through, say so
+        console.log("No more entries!");
+        resolve();
+      }
+    });
+    objectStore
+      .openCursor()
+      .addEventListener("error", () => console.log("openCursor error"));
+  });
+}
+
+function displayLastStory() {
+  // delete previoushtml
+  slider.innerHTML = "";
+  console.log("slider innerhtml deleted");
+
+  const objectStore = db.transaction("snaps_os").objectStore("snaps_os");
+  objectStore.openCursor(null, "prev").addEventListener("success", (e) => {
+    const cursor = e.target.result;
+
+    if (cursor) {
+      console.log("read from IDB: ", cursor.value);
+      let text = cursor.value.text;
+      let url = cursor.value.frame;
+      url = url.split(",")[1];
+
+      let htmlString = `
+        <div class="slide slide-size" style="background-image: url(data:image/octet-stream;base64,${url});">
+              <div class="frame">
+                <div class="text-background">
+                  <p class="generated-text">${text}</p>
+                </div>
+                <div type="button" class="share-button">
+                  <span class="material-symbols-outlined material-symbols-filled size-36">
+                  share
+                  </span>
+                </div>
+              </div>
+            </div>
+        `;
+
+      slider.insertAdjacentHTML("beforeend", htmlString);
+    } else {
+    }
+  });
+  objectStore
+    .openCursor()
+    .addEventListener("error", () => console.log("openCursor error"));
+}
+
+//////////////////
+//////////////////
+//////////////////
+////////////////// START
+//////////////////
+//////////////////
+//////////////////
 
 window.onresize = setCanvasSize;
 window.onload = init;
 
-//
-//
-//
-// TEST
-//
-//
-//
+//////////////////
+//////////////////
+//////////////////
+////////////////// TEST
+//////////////////
+//////////////////
+//////////////////
 
 function testSliderContainer() {
   stories.style.display = "flex";
