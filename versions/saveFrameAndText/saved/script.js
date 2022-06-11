@@ -46,6 +46,8 @@ window.onload = () => {
         console.log(cursor.value);
         let img = document.createElement("img");
         img.src = cursor.value.snap;
+
+        console.log(cursor.value.snap);
         snapContainer.appendChild(img);
 
         // Iterate to the next item in the cursor
