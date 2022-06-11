@@ -38,6 +38,7 @@ let tooltip;
 let tooltipText;
 let progress;
 let stories;
+let header;
 
 // dom-events
 let startWritingBtn;
@@ -73,6 +74,7 @@ function init() {
   handleNavigation();
 
   console.log(video.readyState, video.HAVE_ENOUGH_DATA);
+
   //
   // ASYNC STREAM AND CLASSIFIER
   //
@@ -95,6 +97,100 @@ function init() {
 
   // render media stream on the canvas
   requestAnimationFrame(renderFrame);
+
+  //
+  // stories page navigation (horizontal slide)
+  //
+
+  slides.forEach((slide, index) => {
+    // Touch events
+    slide.addEventListener("touchstart", touchStart(index));
+    slide.addEventListener("touchend", touchEnd);
+    slide.addEventListener("touchmove", touchMove);
+  });
+
+  //
+  // TEST
+  //
+  // testSliderContainer();
+}
+
+//
+// stories page navigation (horizontal slide)
+//
+
+// stories page navigation
+let slider;
+let slides;
+
+let isDragging = false,
+  startPos = 0,
+  currentTranslate = 0,
+  prevTranslate = 0,
+  animationID = 0,
+  currentIndex = 0;
+
+function touchStart(index) {
+  // TODO: understand this return functino inside
+  // takes in de index of the slide as an argument
+  // so return another functin that takes in the event object
+  return function (event) {
+    currentIndex = index;
+    startPos = getPositionX(event);
+    isDragging = true;
+
+    // tell the browser we want to perform an animation
+    // and request a call to a specific f. to update that
+    // animation before the next repaint
+    // Here the translateX value is animated
+    // It returns an animatinoId wchich we can use later on
+    // to end the animation frame in touchEnd()
+    // - takes in a function and call it inside recursively
+    animationID = requestAnimationFrame(animation);
+    slider.classList.add("grabbing");
+  };
+}
+
+function touchEnd() {
+  isDragging = false;
+  cancelAnimationFrame(animationID);
+
+  const movedBy = currentTranslate - prevTranslate;
+  // if slided more then x go to next/prev slide
+  if (movedBy < -100 && currentIndex < slides.length - 1) currentIndex += 1;
+  if (movedBy > 100 && currentIndex > 0) currentIndex -= 1;
+
+  setPositionByIndex();
+  slider.classList.remove("grabbing");
+}
+
+function touchMove(event) {
+  if (isDragging) {
+    const currentPosition = getPositionX(event);
+    currentTranslate = prevTranslate + currentPosition - startPos;
+  }
+}
+
+function getPositionX(event) {
+  return event.touches[0].clientX;
+}
+
+function animation() {
+  setSliderPosition();
+  if (isDragging) requestAnimationFrame(animation);
+}
+
+function setSliderPosition() {
+  slider.style.transform = `translateX(${currentTranslate}px)`;
+}
+
+function setPositionByIndex() {
+  // shift the entire innerWidth of the window
+  currentTranslate =
+    // currentIndex * -(window.innerWidth * 0.84 - 0.02 * window.innerWidth);
+    currentIndex * (-window.innerWidth * 0.85);
+  setSliderPosition;
+  prevTranslate = currentTranslate;
 }
 
 //
@@ -289,15 +385,13 @@ function updateClassificationVariables(results) {
   confidence = results[0].confidence;
 }
 
-function checkToStop() {
-  classifying = true;
-  console.log("Stop classifying");
-  return;
-}
-
 function classifyVideo() {
   classifier.classify(video, (error, results) => {
-    if (!classifying) checkToStop();
+    if (!classifying) {
+      classifying = true;
+      console.log("Stop classifying");
+      return;
+    }
 
     // end loader on landing page
     if (firstResult) endLoader();
@@ -310,6 +404,7 @@ function classifyVideo() {
     updateClassificationVariables(results);
 
     // TODO: add some logic so that it doesn't update dom every classification but only when changed
+    // if nature is classified update state of UI
     if (isNature() && isConfident()) {
       renderFoundNature();
     } else {
@@ -342,6 +437,10 @@ function getDomElements() {
   canvas = document.getElementById("canvas");
   video = document.getElementById("video");
   context = canvas.getContext("2d");
+  slider = document.getElementById("slider-container");
+  slides = Array.from(document.getElementsByClassName("slide"));
+  header = document.getElementById("header");
+  shareBtns = Array.from(document.getElementsByClassName("share-button"));
 
   startWritingBtn = document.getElementById("start-writing");
   closeBtn = document.getElementById("close");
@@ -377,17 +476,50 @@ function handleNavigation() {
   toStoriesBtn.addEventListener("click", () => {
     classifying = false;
     stories.style.display = "flex";
+    header.classList.remove("blurred");
   });
 
   toWrite.addEventListener("click", () => {
     //start classifying again
     classifyVideo();
     stories.style.display = "none";
+    header.classList.add("blurred");
   });
 
   // user decides to write
   progress.addEventListener("transitionend", () => {
     userPrompt();
+  });
+
+  shareBtns.forEach((shareBtn, index) => {
+    // get frame + text from IDB (based on index)
+    // make a sinlge png format (maybe based on which btn is pressed; -fb -insta)
+    // OR make the format when save to db in the first place
+    // OR just get the image from the html...
+    /*
+    const blob = `firstChild.style.background-url`;
+    const filesArray = [
+      new File([blob], "frame.jpg", {
+        type: "image/jpeg",
+        lastModified: new Date().getTime(),
+      }),
+    ];
+    */
+    const shareData = {
+      title: "WORDS FOR NATURE",
+      text: `firstChild.firstchild.firstchild.innerText`,
+      url: "link to the app",
+      // files: filesArray,
+    };
+    shareBtn.addEventListener("click", async () => {
+      try {
+        await navigator.share(shareData);
+        // TODO: show reuslt in app
+        // resultPara.textContent = "WORDS FOR NATURE shared succesfully";
+      } catch (err) {
+        // resultPara.textContent = "Error: " + err;
+      }
+    });
   });
 }
 
@@ -518,3 +650,17 @@ function checkDB() {
 
 window.onresize = setCanvasSize;
 window.onload = init;
+
+//
+//
+//
+// TEST
+//
+//
+//
+
+function testSliderContainer() {
+  stories.style.display = "flex";
+  landing.style.display = "none";
+  onboarding.style.display = "none";
+}
