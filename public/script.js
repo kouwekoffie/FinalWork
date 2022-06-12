@@ -154,11 +154,8 @@ function renderCameraFeed() {
   // update dom
   stories.style.display = "none";
   header.classList.add("blurred");
-  // show toStoriesButton if its after the first story in IDB
-  if (toStoriesBtn.classList.contains("hidden")) renderToStoriesButton();
-
   //start rendering the stream again
-  canvasStreamAnimationID = requestAnimationFrame(renderFrame);
+  renderFrame();
 }
 
 // show stories
@@ -416,10 +413,10 @@ function getDomElements() {
 
 function handleNavigation() {
   startWritingBtn.addEventListener("click", () => {
-    landingOverlay.style.display = "none";
-    document.body.requestFullscreen();
     renderCameraFeed();
     classifyVideo();
+    landingOverlay.style.display = "none";
+    document.body.requestFullscreen();
   });
 
   gotItBtn.addEventListener("click", () => {
@@ -449,6 +446,8 @@ function handleNavigation() {
     renderNoNature();
     //start classifying again
     classifyVideo();
+    // if its the first time going out of stories show the button to come back
+    if (toStoriesBtn.classList.contains("hidden")) renderToStoriesButton();
 
     renderCameraFeed();
   });
