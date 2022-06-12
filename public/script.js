@@ -2,6 +2,10 @@
 let db;
 let openRequest;
 
+//AI PROXY
+// let API_endpoint = "/api/test";
+let API_endpoint = "/api/test";
+
 // prompt
 let writePromptDelay = 3;
 let userPrompted = false;
@@ -55,6 +59,15 @@ function init() {
   console.log("window loaded!");
 
   //
+  // DOM
+  //
+
+  // grab reference to all elements
+  getDomElements();
+  //navigation
+  handleNavigation();
+
+  //
   // IDB
   //
 
@@ -67,20 +80,24 @@ function init() {
     })
     .then((dbIsPopulated) => {
       console.log("Is db populated: ", dbIsPopulated);
-      if (dbIsPopulated) renderToStoriesButton();
+      if (dbIsPopulated) {
+        renderToStoriesButton();
+        //render slides html read from IDB
+        return displayStories();
+      }
+    })
+    .then(() => {
+      // DOM MANIPULATION:
+      // grab reference to the new slides created in displayStories
+      // add slider navigation to the slides
+      addSlideBehaviour();
+      // grab reference to the new share buttons created in displayStories
+      // add share behaviour to the buttons in the slides
+      addShareBehaviour();
     });
 
   //Set up the database tables if this has not already been done
   setupDBTables();
-
-  //
-  // DOM
-  //
-
-  // grab reference to all elements
-  getDomElements();
-  //navigation
-  handleNavigation();
 
   //
   // ASYNC STREAM AND CLASSIFIER
@@ -88,57 +105,100 @@ function init() {
 
   // render stream
   setCanvasSize();
-  // getStream();
   const getStream = navigator.mediaDevices.getUserMedia(constraints);
   const getClassifier = ml5.imageClassifier(classifier_URL);
 
   // wait for both the stream and the classifier to load
+  // then classify the stream
   Promise.all([getStream, getClassifier]).then((values) => {
-    stream = values[0];
-    video.srcObject = stream;
-
-    classifier = values[1];
     console.log("model and stream loaded");
-    classifyVideo();
+
+    stream = values[0];
+    classifier = values[1];
+
+    // once the stream from device camera is loaded start rendering it recursively to the canvas
+    video.srcObject = stream;
+    // classifyVideo();
+
+    // show the startButton
+    // start button begins the stream render animation and classification
+    endLoader();
   });
 
   // render media stream on the canvas
-  requestAnimationFrame(renderFrame);
 
   //
+  // TEST
   //
-  // stories page navigation + share (horizontal slide)
-  //
-  //
+  // testSliderContainer();
+}
 
-  //TODO stories page nav needs to be handled after db loads in
+// write();
 
-  //
-  // NAV
-  //
+//////////////////
+//////////////////
+//////////////////
+////////////////// DOM
+//////////////////
+//////////////////
+//////////////////
 
-  /*
+//
+//
+// STORIES
+//
+//
 
-  // slider = document.getElementById("slider-container");
+// show camera-feed
+function renderCameraFeed() {
+  // update dom
+  stories.style.display = "none";
+  header.classList.add("blurred");
+  // show toStoriesButton if its after the first story in IDB
+  if (toStoriesBtn.classList.contains("hidden")) renderToStoriesButton();
+
+  //start rendering the stream again
+  canvasStreamAnimationID = requestAnimationFrame(renderFrame);
+}
+
+// show stories
+function renderStoriesPage() {
+  stories.style.display = "flex";
+  header.classList.remove("blurred");
+}
+
+//
+//
+// stories slider
+//
+//
+
+let slider;
+let slides;
+
+let isDragging = false,
+  startPos = 0,
+  currentTranslate = 0,
+  prevTranslate = 0,
+  sliderAnimationID = 0,
+  currentIndex = 0;
+
+function addSlideBehaviour() {
+  // grab reference to the new slides created in displayStories
   slides = Array.from(document.getElementsByClassName("slide"));
-
+  // add slider navigation to the slides
   slides.forEach((slide, index) => {
     // Touch events
     slide.addEventListener("touchstart", touchStart(index));
     slide.addEventListener("touchend", touchEnd);
     slide.addEventListener("touchmove", touchMove);
   });
+}
 
-  */
-
-  //
-  // SHARE
-  //
-
-  /*
-
+function addShareBehaviour() {
+  // grab reference to the new share buttons created in displayStories
   shareBtns = Array.from(document.getElementsByClassName("share-button"));
-
+  // add share behaviour to the buttons in the slides
   shareBtns.forEach((shareBtn, index) => {
     // get frame + text from IDB (based on index)
     // make a sinlge png format (maybe based on which btn is pressed; -fb -insta)
@@ -169,52 +229,7 @@ function init() {
       }
     });
   });
-
-  */
-
-  //
-  // TEST
-  //
-  // testSliderContainer();
 }
-
-// write();
-
-//////////////////
-//////////////////
-//////////////////
-////////////////// DOM
-//////////////////
-//////////////////
-//////////////////
-
-//
-//
-// STORIES
-//
-//
-
-// show camera-feed
-function showCamerFeed() {}
-
-// show stories
-function renderStoriesPage() {
-  stories.style.display = "flex";
-  header.classList.remove("blurred");
-}
-
-//
-// stories slider
-//
-let slider;
-let slides;
-
-let isDragging = false,
-  startPos = 0,
-  currentTranslate = 0,
-  prevTranslate = 0,
-  sliderAnimationID = 0,
-  currentIndex = 0;
 
 function touchStart(index) {
   // TODO: understand this return functino inside
@@ -403,6 +418,8 @@ function handleNavigation() {
   startWritingBtn.addEventListener("click", () => {
     landingOverlay.style.display = "none";
     document.body.requestFullscreen();
+    renderCameraFeed();
+    classifyVideo();
   });
 
   gotItBtn.addEventListener("click", () => {
@@ -410,6 +427,7 @@ function handleNavigation() {
   });
 
   closeBtn.addEventListener("click", () => {
+    classifying = false;
     landing.style.display = "flex";
     window.scrollTo(0, 0);
     document.exitFullscreen();
@@ -422,6 +440,8 @@ function handleNavigation() {
   toStoriesBtn.addEventListener("click", () => {
     classifying = false;
     renderStoriesPage();
+    // stop animationframe
+    // cancelAnimationFrame(canvasStreamAnimationID);
   });
 
   toWrite.addEventListener("click", () => {
@@ -430,14 +450,7 @@ function handleNavigation() {
     //start classifying again
     classifyVideo();
 
-    // update dom
-    stories.style.display = "none";
-    header.classList.add("blurred");
-    // show toStoriesButton if its after the first story
-    if (toStoriesBtn.classList.contains("hidden")) renderToStoriesButton();
-
-    //start rendering the stream again
-    canvasStreamAnimationID = requestAnimationFrame(renderFrame);
+    renderCameraFeed();
   });
 
   // user decides to write
@@ -458,12 +471,13 @@ function handleNavigation() {
 // again the solution with returning functions inside function
 function captureFrame(canvas) {
   return new Promise((resolve, reject) => {
+    // save canvas to a blob file
     canvas.toBlob((blob) => {
+      // base 64 encode the blob
       let reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onload = function () {
         let url = reader.result;
-        console.log("url ready: ", url);
         resolve(url);
       };
     });
@@ -503,7 +517,7 @@ function callAIProxy(label) {
   };
 
   return new Promise((resolve) => {
-    fetch("/api/test", options)
+    fetch(API_endpoint, options)
       .then((res) => res.json())
       .then((json) => {
         // console.log(json);
@@ -513,11 +527,12 @@ function callAIProxy(label) {
 }
 
 // is called when user holds his camera still in front of nature
-// and the same classification is done over and over
+// and the same classification is done over and classifyingover
 // (long enough for the progress-transition to finish)
 async function userPrompt() {
   console.log("user prompt");
 
+  cancelAnimationFrame(canvasStreamAnimationID);
   // TODO: do I have to declarce the functions in these variables?
   let getFrame = captureFrame(canvas);
   let getText = callAIProxy(label);
@@ -526,13 +541,14 @@ async function userPrompt() {
   classifying = false;
 
   // stop animationframe
-  cancelAnimationFrame(canvasStreamAnimationID);
 
   // renderIsWriting
   renderIsWriting();
 
   // wait for frame and text load
   // then wait for frame and text to upload to db
+  // then wait for db read and html creation
+  // then add stories js slider navigation & share button listeners
   // then show the stories page
   Promise.all([getFrame, getText])
     .then((values) => {
@@ -540,7 +556,6 @@ async function userPrompt() {
         frame: values[0],
         text: values[1],
       };
-      console.log("url after promise all: ", newSnap.frame);
       console.log("frame and text loaded");
       return newSnap;
     })
@@ -550,7 +565,13 @@ async function userPrompt() {
       return displayStories();
     })
     .then(() => {
-      console.log("after snaps all displayed");
+      // grab reference to the new slides created in displayStories
+      // add slider navigation to the slides
+      addSlideBehaviour();
+      // grab reference to the new share buttons created in displayStories
+      // add share behaviour to the buttons in the slides
+      addShareBehaviour();
+      // show storie page
       renderStoriesPage();
     });
 }
@@ -593,8 +614,8 @@ function classifyVideo() {
       return;
     }
 
-    // end loader on landing page
-    if (firstResult) endLoader();
+    // // end loader on landing page
+    // if (firstResult) endLoader();
 
     if (error) {
       console.error(error);
@@ -744,7 +765,6 @@ function displayStories() {
   return new Promise((resolve) => {
     // delete previoushtml
     slider.innerHTML = "";
-    console.log("slider innerhtml deleted");
 
     // Open object store and then get a cursor - which iterates through all the
     // different data items in the store
@@ -755,7 +775,6 @@ function displayStories() {
 
       // If there is still another data item to iterate through, keep running this code
       if (cursor) {
-        console.log("read from IDB: ", cursor.value);
         let text = cursor.value.text;
         let url = cursor.value.frame;
         url = url.split(",")[1];
@@ -780,7 +799,7 @@ function displayStories() {
         cursor.continue(); // Iterate to the next item in the cursor
       } else {
         // if there are no more cursor items to iterate through, say so
-        console.log("No more entries!");
+        console.log("Read all entries from IDB and inserted html!");
         resolve();
       }
     });
