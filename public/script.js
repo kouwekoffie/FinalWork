@@ -4,7 +4,7 @@ let openRequest;
 
 //AI PROXY
 // let API_endpoint = "/api/test";
-let API_endpoint = "/api/test";
+let API_endpoint = "/api";
 
 // prompt
 let writePromptDelay = 3;
