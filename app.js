@@ -89,8 +89,8 @@ app.post("/api", async (req, res) => {
       temperature: 1,
       max_tokens: 25,
       stop: "###",
-      presence_penalty: 1.7,
-      frequency_penalty: 1.7,
+      presence_penalty: 2,
+      frequency_penalty: 2,
     });
     res.send(completion.data);
   } catch (error) {

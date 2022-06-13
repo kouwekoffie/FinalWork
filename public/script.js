@@ -26,7 +26,9 @@ let canvasStreamAnimationID;
 
 // ml5
 let classifier_URL =
-  "https://teachablemachine.withgoogle.com/models/ap4x9W720/";
+  // "https://teachablemachine.withgoogle.com/models/ap4x9W720/";
+  // "https://teachablemachine.withgoogle.com/models/foWpFDh0o/";
+  "./models/natureClassifier4/model.json";
 let predictions;
 let label;
 let confidence;
@@ -413,8 +415,8 @@ function getDomElements() {
 
 function handleNavigation() {
   startWritingBtn.addEventListener("click", () => {
-    renderCameraFeed();
     classifyVideo();
+    renderCameraFeed();
     landingOverlay.style.display = "none";
     document.body.requestFullscreen();
   });
