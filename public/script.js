@@ -26,7 +26,7 @@ let canvasStreamAnimationID;
 
 // ml5
 let classifier_URL =
-  "https://teachablemachine.withgoogle.com/models/wWMqOuK3t/";
+  "https://teachablemachine.withgoogle.com/models/ap4x9W720/";
 let predictions;
 let label;
 let confidence;
@@ -500,13 +500,17 @@ let label = "tree";
 function callAIProxy(label) {
   // TODO: save previous completions in localstorage so that they are taken into
   // acount when the user uses the app the next time
+
+  /*
   const story = [
     "This a dummy completion from the openAI GPT3 model",
     "This is another completion thats different from the previous one",
   ];
+  */
 
   // call api on user input (timer or tap)
-  let data = { label, story };
+  // let data = { label, story };
+  let data = { label };
   const options = {
     method: "POST",
     headers: {
