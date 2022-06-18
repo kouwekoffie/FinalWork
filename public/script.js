@@ -26,8 +26,9 @@ let canvasStreamAnimationID;
 
 // ml5
 // let classifier_URL = "https://teachablemachine.withgoogle.comn/models/ap4x9W720/";
+// classifier
 // let classifier_URL = "https://teachablemachine.withgoogle.com/models/foWpFDh0o/";
-let classifier_URL = "./models/natureClassifier4/model.json";
+let classifier_URL = "./natureClassifier4/model.json";
 let predictions;
 let label;
 let confidence;
