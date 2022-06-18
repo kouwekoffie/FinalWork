@@ -28,7 +28,7 @@ let canvasStreamAnimationID;
 // let classifier_URL = "https://teachablemachine.withgoogle.comn/models/ap4x9W720/";
 // classifier
 // let classifier_URL = "https://teachablemachine.withgoogle.com/models/foWpFDh0o/";
-let classifier_URL = "./natureClassifier4/model.json";
+let classifier_URL = "./src/natureClassifier4/model.json";
 let predictions;
 let label;
 let confidence;
@@ -340,7 +340,7 @@ function renderNoNature() {
   let html;
 
   // label
-  html = `<img src="./images/ellipsis.svg" alt="">`;
+  html = `<img src="./src/images/ellipsis.svg" alt="">`;
   labelContainer.innerHTML = html;
 
   //tooltip
