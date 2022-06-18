@@ -25,10 +25,9 @@ let constraints = {
 let canvasStreamAnimationID;
 
 // ml5
-let classifier_URL =
-  // "https://teachablemachine.withgoogle.com/models/ap4x9W720/";
-  // "https://teachablemachine.withgoogle.com/models/foWpFDh0o/";
-  "./models/natureClassifier4/model.json";
+// let classifier_URL = "https://teachablemachine.withgoogle.comn/models/ap4x9W720/";
+// let classifier_URL = "https://teachablemachine.withgoogle.com/models/foWpFDh0o/";
+let classifier_URL = "./models/natureClassifier4/model.json";
 let predictions;
 let label;
 let confidence;
@@ -121,6 +120,7 @@ function init() {
     // once the stream from device camera is loaded start rendering it recursively to the canvas
     video.srcObject = stream;
     // classifyVideo();
+    // TODO: renderframe zou op hetzelfde level moeten staan als classifyvideo ipv in classifyvideo te callen
 
     // show the startButton
     // start button begins the stream render animation and classification
