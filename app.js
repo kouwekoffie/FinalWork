@@ -98,6 +98,8 @@ app.post("/api", async (req, res) => {
   }
 });
 
+app.get("/");
+
 //promt = label (req querys or params)
 /*
 app.get("/api", async (req, res) => {
