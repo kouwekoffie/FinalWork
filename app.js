@@ -19,75 +19,62 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 // gpt3 prompts
+//https://stackoverflow.com/a/2450976
+function shuffle(array) {
+  let currentIndex = array.length,
+    randomIndex;
 
-const prompts = {
-  sky: {
-    subject: "the sky",
-    examples: [
-      "the blue of this sky sounds so loud that it can be heard only with our eyes",
-      "blue skiesa change in attitude blows in",
-      "Like a drifting cloud Bound by nothing I just let go Giving myself up To the whim of the wind",
-    ],
-  },
-  leaf: {
-    subject: "leaves",
-    examples: [
-      "what do leaves have to say Tales of the wind and the rain, Of sun and shadows too They are nature's storytellers",
-      "Look at the leaves and what do you see? Nature's way of painting a masterpiece",
-      "Leaves are floating messengers of autumn They bring us news of the changing season",
-    ],
-  },
-  flower: {
-    subject: "a flower",
-    examples: [
-      "The flower that smiles to-day To-morrow dies All that we wish to stay Tempts and then flies",
-      "Can we speak in flowers It will be easier for me to understand",
-      "lifting up your face smiling in the bright sunshine beautiful flower",
-    ],
-  },
-  plant: {
-    subject: "a plant",
-    examples: [
-      "We start small we are fragile But with time we grow strong",
-      "Impatient for sun I stretch towards the sky Desperate for attention",
-      "At first we are tiny and insignificant But with time care and love",
-    ],
-  },
-  soil: {
-    subject: "the soil",
-    examples: [
-      "Soil exists for love Hold flowers or plants, equal Root of connection",
-      "A plant grows from the soil which fills her hunger She gives back to the Earth.",
-      "The soil is alive With billions of creatures Teeming with life",
-    ],
-  },
-  tree: {
-    subject: "a tree",
-    examples: [
-      "She stands tall and proud She has been witness to so much",
-      "The tree is standing there Looking at us, but we don't",
-      "A tree is like a guardianA watchful, wise old friend",
-    ],
-  },
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+}
+
+let labels = ["plant", "leaf", "flower", "tree", "sky"];
+let examples = {
+  plant: "there is peaceful there is wild I am both at the same time",
+  leaf: "look at the leaves and what do you see? Nature's way of painting a masterpiece",
+  flower: "can we speak in flowers it will be easier for me to understand",
+  tree: "the tree is standing there Looking at us, but we don't",
+  sky: "blue skies a change in attitude blows in",
 };
-
+//
 // endpoints
+//
 
 // prompt = label + previous completions (json)
 app.post("/api", async (req, res) => {
   console.log("I got a request!");
-
   const label = req.body.label;
-  const subject = prompts[label].subject;
-  const examples = prompts[label].examples;
 
-  const prompt = `The following is a short poem about ${subject} ${examples[0]}### The following is a short poem about ${subject} ${examples[1]}### The following is a short poem about ${subject} ${examples[2]}### The following is a short poem about ${subject}`;
+  // filter out the prompt label and shuffle
+  labels = labels.filter((e) => e !== label);
+  labels = shuffle(labels);
+
+  const prompt = `topic: ${labels[0]}\n poem: ${
+    examples[labels[0]]
+  }\n ###\n topic: ${labels[1]}\n poem: ${examples[labels[1]]}\n ###\n topic: ${
+    labels[2]
+  }\n poem: ${examples[labels[2]]}\n ###\n topic: ${label}\n poem:`;
+
+  console.log("label", label);
+  console.log("prompt", prompt);
 
   try {
     const completion = await openai.createCompletion("text-davinci-002", {
       prompt: prompt,
       temperature: 1,
-      max_tokens: 25,
+      max_tokens: 20,
       stop: "###",
       presence_penalty: 2,
       frequency_penalty: 2,
@@ -97,8 +84,6 @@ app.post("/api", async (req, res) => {
     console.log(error);
   }
 });
-
-app.get("/");
 
 //promt = label (req querys or params)
 /*
