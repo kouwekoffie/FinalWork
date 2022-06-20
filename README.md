@@ -14,14 +14,14 @@
 
 ## General Information
 
-Words For Nature is a mobile web application that uses the phone camera to detects natural objects in real-time and automatically generate texts using machine learning.<br /> The aim of the project is to connect users to their natural environment.<br /> It's created as a final research project for a bachelor in creative technologies at Erasmus University College, Brussel.
+Words For Nature is a mobile web application that uses the phone camera to detects natural objects in real-time and automatically generate texts using machine learning.<br /> The aim of the project is to connect users to their natural environment.<br /> It's created as a final research project for a bachelor in Creative Technologies at Erasmus University College, Brussel.
 
 ## Technologies Used
 
-express 4.18.1
-node 14.16.1
-ml5
-OpenAI API
+- express 4.18.1
+- node 14.16.1
+- ml5
+- OpenAI API
 
 ## Screenshots
 
