@@ -31,10 +31,10 @@ Words For Nature is a mobile web application that uses the phone camera to detec
 
 ### Web technology
 
-- Media Steams API: get a video stream from the users phone camera to classify
-- requestAnimationFrame: in a loop, the video stream is continuesly drawn on the canvas
+- [Media Steams API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream?retiredLocale=nl): get a video stream from the users phone camera to classify
+- [requestAnimationFrame](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame): in a loop, the video stream is continuesly drawn on the canvas
 - proxyserver: to call the openAI API
-- IndexedDB: blobs taken from the canvas and generated texts are saved on the client side storage
+- [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API?retiredLocale=nl): blobs taken from the canvas and generated texts are saved on the client side storage
 
 ### AI - real time image classification
 
