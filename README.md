@@ -1,5 +1,3 @@
-![Application schema](./images/snaps.png)
-
 # Words For Nature
 
 > A mobile web application that uses machine learning to talk about nature.
@@ -37,7 +35,6 @@ OpenAI API
 - requestAnimationFrame: in a loop, the video stream is continuesly drawn on the canvas
 - proxyserver: to call the openAI API
 - IndexedDB: blobs taken from the canvas and generated texts are saved on the client side storage
-  ![Application schema](./img/schema.png)
 
 ### AI - real time image classification
 
