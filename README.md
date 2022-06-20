@@ -59,5 +59,5 @@ Once you obtained an API key copy paste it in the .env_sample and save it as .en
 
 ## Usage
 
-After you clone this repo to your desktop, go to its root directory and run `npm install` to install its dependencies.<br />
+Clone [this repo](https://github.com/kouwekoffie/WordsForNature) to your desktop, go to its root directory and run `npm install` to install its dependencies.<br />
 Once the dependencies are installed, you can run `npm start` to start the application.<br /> You will then be able to access it at localhost:3000
